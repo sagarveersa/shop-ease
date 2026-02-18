@@ -36,43 +36,43 @@ class User(AbstractUser):
 
     objects = CustomUserManager()
 
-# class Country(models.Model):
-#     name = models.CharField(max_length=255)
-#     code = models.CharField(max_length=2)
+class Country(models.Model):
+    name = models.CharField(max_length=255)
+    code = models.CharField(max_length=2)
 
-# class Province(models.Model):
-#     name = models.CharField(max_length=255)
-#     country = models.ForeignKey(Country, on_delete=models.CASCADE)
+class Province(models.Model):
+    name = models.CharField(max_length=255)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE)
 
-#     class Meta:
-#         models.UniqueConstraint(
-#             fields=["name", "country"],
-#             name="state_country_unique_constraint"
-#         )
+    class Meta:
+        models.UniqueConstraint(
+            fields=["name", "country"],
+            name="state_country_unique_constraint"
+        )
 
-# class City(models.Model):
-#     name = models.CharField(max_length=255)
-#     state = models.ForeignKey(Province, on_delete=models.CASCADE)
+class City(models.Model):
+    name = models.CharField(max_length=255)
+    state = models.ForeignKey(Province, on_delete=models.CASCADE)
 
-#     class Meta:
-#         models.UniqueConstraint(
-#             fields=["name", "state"],
-#             name="city_state_unique_constraint"
-#         )
+    class Meta:
+        models.UniqueConstraint(
+            fields=["name", "state"],
+            name="city_state_unique_constraint"
+        )
 
-# class Address(models.Model):
-#     """
-#     Address is a historical record kind of an archive and once a record is set it should not change even if 
-#     related data changes.
-#     """
-#     country = models.ForeignKey(Country, on_delete=models.PROTECT)
-#     province = models.ForeignKey(Province, on_delete=models.PROTECT)
-#     city = models.ForeignKey(Province, on_delete=models.PROTECT)
+class Address(models.Model):
+    """
+    Address is a historical record kind of an archive and once a record is set it should not change even if 
+    related data changes.
+    """
+    country = models.ForeignKey(Country, on_delete=models.PROTECT)
+    province = models.ForeignKey(Province, on_delete=models.PROTECT)
+    city = models.ForeignKey(City, on_delete=models.PROTECT)
 
-#     address_line = models.TextField()
-#     pincode = models.CharField(max_length=255)
+    address_line = models.TextField()
+    pincode = models.CharField(max_length=255)
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    profile_img = models.CharField(max_length=255)
-    # address = models.ManyToManyField(Address)
+    profile_img = models.CharField(max_length=255, null=True, blank=True)
+    # address_set = models.ManyToManyField(Address)

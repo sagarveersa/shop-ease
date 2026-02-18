@@ -1,10 +1,11 @@
 from rest_framework.response import Response
 from rest_framework.generics import CreateAPIView
-from rest_framework.views import APIView
+from rest_framework.views import APIView, ListAPIView
+from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
-from .serializers import UserRegistrationSerializer, LoginSerializer, UserDetailSerializer
+from .serializers import UserRegistrationSerializer, LoginSerializer, UserDetailSerializer, AvailableRegionsSerializers
 
 # Create your views here.
 
@@ -25,5 +26,10 @@ class UserDetailView(APIView):
         serializer = UserDetailSerializer(request.user)
         return Response(serializer.data)
 
-class ProfileView():
-    pass
+class AvailableRegionsView(ListAPIView):
+    serializer_class=AvailableRegionsSerializers
+    
+class ProfileViewSet(ModelViewSet):
+    serializer_class = [] 
+    
+

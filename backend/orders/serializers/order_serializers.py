@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from .models import OrderItem, Order
+from ..models import OrderItem, Order
 from django.db import transaction
 from products.models import Product
+from .address_serializers import Address
 
 class OrderItemSerializer(serializers.ModelSerializer):
     product_name = serializers.PrimaryKeyRelatedField(source='product.name', read_only=True)
@@ -24,7 +25,7 @@ class OrderItemCreateSerializer(serializers.Serializer):
     quantity = serializers.IntegerField(min_value=1)
 
 class OrderCreateSerializer(serializers.Serializer):
-    shipping_address = serializers.CharField()
+    shipping_address = AddressSerializer()
     items = OrderItemCreateSerializer(many=True)
 
     def create(self, validated_data):

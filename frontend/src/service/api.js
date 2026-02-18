@@ -31,6 +31,17 @@ export const api = axios.create({
 
 api.interceptors.request.use((config) => {
   if (config.data) {
+    if (typeof config.data === "string") {
+      try {
+        config.data = JSON.parse(config.data);
+      } catch (error) {
+        // NOT JSON leave it as it is
+        console.error(
+          "[Case Transpiler Interceptor] config.data is not JSON",
+          error,
+        );
+      }
+    }
     config.data = snakecaseKeys(config.data, { deep: true });
   }
 
@@ -39,15 +50,10 @@ api.interceptors.request.use((config) => {
 
 // Add a request interceptor to add the auth token to every request
 api.interceptors.request.use(
-  (config) => {
+  async (config) => {
     const token = localStorage.getItem("accessToken");
-    console.log("\nNew Request: ");
-    console.log(
-      `[Request Interceptor] Request intercepted:-> ${config._retry}`,
-    );
-    console.log("[Request Interceptor] Request object", config);
     if (token) {
-      config.headers = { ...config.headers, Authorization: `Bearer ${token}` };
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
@@ -70,47 +76,24 @@ function onRefreshed(newAccessToken) {
 }
 
 api.interceptors.response.use(
-  (response) => {
-    if (!response.config) {
-      console.log(`In this response config is undefined`);
-      // } else if (response.config._retry) {
-      //   console.log(
-      //     `Response of retry request intercepted ${originalRequest._retry}\nResponse is ${response}`,
-      //   );
-    } else {
-      console.log(`Response is received`, response);
-    }
-    return response;
-  },
+  (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    console.log("[Response Interceptor] Error - ", error);
-    console.log(
-      "[Response Interceptor] Extracting original request: ",
-      originalRequest,
-    );
-
     if (error.response?.status !== 401 || originalRequest._retry) {
-      console.log(
-        `[Response Interceptor] Response of retry request intercepted ${originalRequest._retry}`,
-      );
       return Promise.reject(error);
     }
+
     // _retry is custom attribute added to prevent infinite loop
     originalRequest._retry = true;
 
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
-        console.log("[Response Interceptor] Registering request in the queue");
         subscribeTokenRefresh((newAccessToken) => {
-          originalRequest.headers = {
-            ...originalRequest.headers,
-            Authorization: `Bearer ${newAccessToken}`,
-          };
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           resolve(api(originalRequest));
-        });
-      });
-    }
+        }); // subscribeTokenRefresh call ends here
+      }); // return statement ends here
+    } // if ends here
 
     isRefreshing = true;
     try {
@@ -130,15 +113,7 @@ api.interceptors.response.use(
 
       // notify all queued requests
       onRefreshed(newAccessToken);
-      originalRequest.headers = {
-        ...originalRequest.headers,
-        Authorization: `Bearer ${newAccessToken}`,
-      };
-
-      console.log(
-        "[Response Interceptor] sending retry request: ",
-        originalRequest,
-      );
+      originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
       return api(originalRequest);
     } catch (error) {
@@ -146,7 +121,7 @@ api.interceptors.response.use(
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
 
-      window.location.href = "/login";
+      // window.location.href = "/login";
       return Promise.reject(error);
     } finally {
       isRefreshing = false;

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User
+from .models import User, Address, Country, Province, City, Profile
 
 class CustomUserAdmin(UserAdmin):
     model = User
@@ -24,3 +24,8 @@ class CustomUserAdmin(UserAdmin):
     )
 
 admin.site.register(User, CustomUserAdmin)
+admin.site.register(Address)
+admin.site.register(Country)
+admin.site.register(Province)
+admin.site.register(City)
+admin.site.register(Profile)

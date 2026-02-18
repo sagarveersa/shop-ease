@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
+from .models import Address, Country, City, Province, Profile
 
 User = get_user_model()
 
@@ -66,3 +67,4 @@ class UserDetailSerializer(serializers.ModelSerializer):
     
     def get_name(self, obj):
         return obj.get_full_name()
+
