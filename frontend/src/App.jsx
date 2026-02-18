@@ -9,6 +9,7 @@ import Checkout from "./pages/Checkout";
 import PrivateRoute from "./context/PrivateRoute";
 import Layout from "./components/Layout";
 import "react-toastify/dist/ReactToastify.css";
+import Orders from "./pages/Orders";
 
 const router = createBrowserRouter([
   {
@@ -48,6 +49,14 @@ const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <Checkout />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/orders",
+        element: (
+          <PrivateRoute>
+            <Orders />
           </PrivateRoute>
         ),
       },

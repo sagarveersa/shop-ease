@@ -1,6 +1,6 @@
 import SearchBar from "../components/SearchBar";
 import ProductFilterSidebar from "../components/ProductFilterSidebar";
-import { ProductService } from "../service/product.service";
+import { ProductService } from "../service/product";
 import { useContext, useEffect, useState } from "react";
 import ProductCard from "../components/ProductCard";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -30,6 +30,7 @@ export function Products() {
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
+      console.log("[Products]", filter);
       const response = await ProductService.getProducts(filter);
       setLoading(false);
       if (!response.success) {
@@ -68,7 +69,7 @@ export function Products() {
         </div>
 
         {/* Products area */}
-        <main className="flex-1 ml-72 mt-16 h-[calc(100vh-4rem)] overflow-y-auto p-6 bg-gray-900 relative">
+        <main className="flex-1 ml-72 mt-16 h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar p-6 bg-gray-900 relative">
           {loading && !productsError && (
             <div className="absolute inset-0 flex justify-center items-center">
               <LoadingSpinner />

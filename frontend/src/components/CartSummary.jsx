@@ -1,19 +1,20 @@
 import { useContext } from "react";
 import { cartContext } from "../context/CartContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { checkoutContext } from "../context/CheckoutContext";
 
 export default function CartSummary() {
   const { cart, totalItems, totalPrice } = useContext(cartContext);
-  const { setCheckoutProducts } = useContext(checkoutContext);
+  const { setCheckoutItems } = useContext(checkoutContext);
 
   const checkout = () => {
     // convert cart from an object with productId as keys to a list of products
     const productsList = [];
-    for (const [productID, value] of Object.entries(cart)) {
-      productsList.push(value);
+    for (const [productId, value] of Object.entries(cart)) {
+      productsList.push({ product: value.product, qty: value.qty });
     }
-    setCheckoutProducts(productsList);
+    setCheckoutItems(productsList);
+    navigate("/checkout");
   };
 
   return (

@@ -1,44 +1,18 @@
 import { useContext, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { authContext } from "../context/AuthContext";
-import { UserService } from "../service/user.service";
 import { Navbar } from "../components/Navbar";
 import { toast } from "react-toastify";
+import { baseURL } from "../service/api";
+import axios from "axios";
 
 export default function Login() {
-  const {
-    token,
-    setToken,
-    userID,
-    loggedIn,
-    setUserID,
-    name,
-    setName,
-    setLoggedIn,
-    logout,
-  } = useContext(authContext);
+  const { setToken, loggedIn, setUserID, setName } = useContext(authContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-
-  // if user already logged in
-  useEffect(() => {
-    const verifyLogin = async () => {
-      // verify the token and userID
-      if (!loggedIn) return;
-      const response = await UserService.authenticate(token, userID, name);
-      if (response.success) {
-        setLoggedIn(true);
-        navigate("/explore");
-      } else {
-        logout();
-      }
-    };
-
-    verifyLogin();
-  }, []);
 
   useEffect(() => {
     if (error) {
@@ -47,36 +21,49 @@ export default function Login() {
     }
   }, [error]);
 
+  if (loggedIn) {
+    return Navigate({ to: "/products" });
+  }
+
   const handleForm = async () => {
     setLoading(true);
-    const response = await UserService.login(email, password);
-    setLoading(false);
-    if (!response.success) {
+    console.log("inside handle form");
+
+    try {
+      console.log("making a request");
+      const response = await axios.post(`${baseURL}accounts/login/`, {
+        email: email,
+        password: password,
+      });
+
+      const accessToken = response.data.access;
+      const refreshToken = response.data.refresh;
+
+      const userID = response.data.userID;
+      const name = response.data.name;
+      if (!accessToken || !refreshToken || !userID || !name) {
+        setError("Server Error");
+        return;
+      }
+
+      setToken(accessToken);
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+
+      setUserID(userID);
+      localStorage.setItem("userID", userID);
+
+      setName(name);
+      localStorage.setItem("name", name);
+
+      setError(null);
+      navigate("/");
+    } catch (error) {
       setError(response.data.error);
-      return;
+      console.log(error);
+    } finally {
+      setLoading(false);
     }
-
-    const token = response.data.accessToken;
-    const userID = response.data.userID;
-    const name = response.data.name;
-    if (!token || !userID || !name) {
-      setError("Server Error");
-      setLoggedIn(false);
-      return;
-    }
-
-    setToken(token);
-    localStorage.setItem("accessToken", token);
-
-    setUserID(userID);
-    localStorage.setItem("userID", userID);
-
-    setName(name);
-    localStorage.setItem("name", name);
-
-    setError(null);
-    setLoggedIn(true);
-    navigate("/");
   };
 
   return (
@@ -131,7 +118,9 @@ export default function Login() {
               {!loading && (
                 <button
                   type="submit"
-                  onClick={handleForm}
+                  onClick={() => {
+                    handleForm();
+                  }}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
                 >
                   Login

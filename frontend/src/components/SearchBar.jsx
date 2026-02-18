@@ -2,6 +2,7 @@ import { useContext, useState } from "react";
 import { Search, ShoppingBag, ShoppingCart, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { authContext } from "../context/AuthContext";
+import UserDropdown from "./UserDropdown";
 
 export default function SearchBar() {
   const { loggedIn, name, logout } = useContext(authContext);
@@ -69,25 +70,11 @@ export default function SearchBar() {
             {/* Avatar Button */}
             <button className="flex items-center gap-2 px-3 py-2 rounded-full bg-gray-800 hover:bg-gray-700 transition">
               <div className="relative">
-                <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center">
-                  <User className="h-4 w-4 text-white" />
+                <div className="h-8 w-16 rounded-full bg-blue-600 flex items-center justify-center">
+                  {/* <User className="h-4 w-4 text-white" /> */}
+                  <UserDropdown />
                 </div>
-                {/* Online indicator */}
-                <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 border-2 border-gray-900 rounded-full" />
               </div>
-
-              <span className="hidden md:inline text-sm font-medium text-gray-100">
-                {name}
-              </span>
-            </button>
-
-            {/* Logout */}
-            <button
-              onClick={logout}
-              className="px-4 py-2 text-sm font-medium text-red-500 border border-red-500 rounded-lg
-                     hover:bg-red-500 hover:text-white transition"
-            >
-              Logout
             </button>
           </div>
         ) : (

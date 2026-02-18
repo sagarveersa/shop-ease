@@ -26,7 +26,10 @@ SECRET_KEY = 'django-insecure-0m+t8=om3t4lw3n^78i8p22^n7*p4rsgk4#t=1egbh)-4x3a2s
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost']
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173'
+]
 
 
 # Application definition
@@ -39,16 +42,20 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'django_filters',
 
     'accounts',
     'products',
     'cart',
+    'orders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -107,6 +114,15 @@ AUTH_PASSWORD_VALIDATORS = [
     # },
 ]
 
+AUTHENTICATION_BACKENDS = [
+    # this is for authentication in admin panel which sends email with key 'username'
+    'django.contrib.auth.backends.ModelBackend',
+    
+    # to authenticate with email with key also being 'email'
+    'accounts.backends.CustomAuthBackend', 
+]
+
+AUTH_USER_MODEL = 'accounts.User'
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
@@ -130,7 +146,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=50),
+    'ACCESS_TOKEN_LIFETIME': timedelta(seconds=10),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,

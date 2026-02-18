@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ProductService } from "../service/product.service";
+import { ProductService } from "../service/product";
 import LoadingSpinner from "./LoadingSpinner";
 
 export default function ProductFilterSidebar({ filter, setFilter }) {
@@ -36,6 +36,11 @@ export default function ProductFilterSidebar({ filter, setFilter }) {
   const handleReset = () => {
     setAllowedCategories([]);
     setSort("default");
+    setFilter((prev) => {
+      const { allowedCategories, sort, ...rest } = prev;
+      const newFilter = { ...rest, sort: "default" };
+      return newFilter;
+    });
   };
 
   const handleApply = () => {
@@ -46,9 +51,17 @@ export default function ProductFilterSidebar({ filter, setFilter }) {
         sort: sort,
       }));
     } else {
-      setFilter((prev) => ({ ...prev, sort: sort }));
+      setFilter((prev) => {
+        const { allowedCategories, ...rest } = prev;
+        const newFilter = { ...rest, sort: sort };
+        return newFilter;
+      });
     }
   };
+
+  useEffect(() => {
+    console.log("[ProductFilterSidebar]", filter);
+  }, [filter]);
 
   return (
     <aside className="bg-gray-800 p-4 space-y-6 text-gray-100 overflow-y-auto rounded-xl shadow-lg">

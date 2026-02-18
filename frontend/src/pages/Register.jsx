@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
-import { UserService } from "../service/user.service";
 import { Link, useNavigate } from "react-router-dom";
 import { Navbar } from "../components/Navbar";
+import { baseURL } from "../service/api";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 export default function Register() {
   const [name, setName] = useState("");
@@ -18,19 +20,23 @@ export default function Register() {
     }
   }, [error]);
 
-  const handleForm = () => {
-    const postForm = async () => {
-      setLoading(true);
-      const response = await UserService.register(name, email, password);
-      setLoading(false);
-      if (!response.success) {
-        setError(response.data.error);
-      }
+  const handleForm = async () => {
+    setLoading(true);
+
+    try {
+      const response = axios.post(`${baseURL}accounts/register/`, {
+        name: name,
+        email: email,
+        password: password,
+      });
 
       navigate("/login");
-    };
-
-    postForm();
+    } catch (error) {
+      setError(error?.response?.data?.detail);
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -107,7 +113,9 @@ export default function Register() {
               {!loading && (
                 <button
                   type="submit"
-                  onClick={handleForm}
+                  onClick={() => {
+                    handleForm();
+                  }}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
                 >
                   Register

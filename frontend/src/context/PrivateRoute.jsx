@@ -6,6 +6,7 @@ export default function PrivateRoute({ children }) {
   const { loggedIn } = useContext(authContext);
   const navigate = useNavigate();
   useEffect(() => {
+    console.log("LoggedIn", loggedIn);
     if (!loggedIn) {
       navigate("/login");
     }

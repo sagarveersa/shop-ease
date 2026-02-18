@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect } from "react";
-import { ProductService } from "../service/product.service";
+import { CartService } from "../service/cart";
 import { authContext } from "./AuthContext";
 import { useState } from "react";
 
@@ -7,7 +7,7 @@ export const cartContext = createContext();
 
 export function CartProvider({ children }) {
   const { loggedIn, token } = useContext(authContext);
-  // cart is the local state of the cart and syncedCart is the most recent local state 
+  // cart is the local state of the cart and syncedCart is the most recent local state
   // that has successfully been synced with the backend
   const [cart, setCart] = useState({});
   const [syncedCart, setSyncedCart] = useState({});
@@ -20,7 +20,7 @@ export function CartProvider({ children }) {
     const fetchCart = async () => {
       if (!loggedIn) return;
       setLoading(true);
-      const response = await ProductService.getCart(token);
+      const response = await CartService.getCart();
       setLoading(false);
 
       if (!response.success) {
@@ -40,9 +40,9 @@ export function CartProvider({ children }) {
     if (!loading) {
       let newTotalItems = 0;
       let newTotalPrice = 0;
-      for (const productID of Object.keys(cart)) {
-        newTotalItems += cart[productID].qty;
-        newTotalPrice += cart[productID].qty * cart[productID].price;
+      for (const productId of Object.keys(cart)) {
+        newTotalItems += cart[productId].qty;
+        newTotalPrice += cart[productId].qty * cart[productId].product.price;
       }
 
       setTotalItems(newTotalItems);
@@ -68,16 +68,15 @@ export function CartProvider({ children }) {
             },
           };
         } else {
-          return { ...prev, [product.id]: { ...product, qty: 1 } };
+          return {
+            ...prev,
+            [product.id]: { id: product.id, product: product, qty: 1 },
+          };
         }
       });
 
       // sync backend
-      const response = await ProductService.updateCart(
-        token,
-        product.id,
-        prevQty + 1,
-      );
+      const response = await CartService.updateCart(product.id, prevQty + 1);
 
       if (!response.success) {
         // revert back the state
@@ -127,11 +126,7 @@ export function CartProvider({ children }) {
       });
 
       // sync the backend
-      const response = await ProductService.updateCart(
-        token,
-        product.id,
-        prevQty - 1,
-      );
+      const response = await CartService.updateCart(product.id, prevQty - 1);
       if (!response.success) {
         // revert back the state
         setError(response.data.error);

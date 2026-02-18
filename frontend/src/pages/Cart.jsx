@@ -30,10 +30,14 @@ export function Cart() {
 
             <div className="flex flex-col lg:flex-row gap-6">
               {/* Cart Items */}
-              <div className="flex-1 max-w-3xl max-h-[70vh] overflow-y-auto space-y-4 pr-3 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+              <div className="flex-1 max-w-3xl max-h-[70vh] overflow-y-auto space-y-4 pr-3 custom-scrollbar">
                 {cart &&
                   Object.entries(cart).map(([productID, value]) => (
-                    <CartItem key={productID} product={value} />
+                    <CartItem
+                      key={productID}
+                      product={value.product}
+                      qty={value.qty}
+                    />
                   ))}
               </div>
 

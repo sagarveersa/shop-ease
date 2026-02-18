@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { cartContext } from "../context/CartContext";
 import { Trash } from "lucide-react";
 
-export default function CartItem({ product }) {
+export default function CartItem({ product, qty }) {
   const { addToCart, removeFromCart } = useContext(cartContext);
   if (!product) {
     return <div>Error receiving product as prop</div>;
@@ -23,11 +23,11 @@ export default function CartItem({ product }) {
             onClick={() => removeFromCart(product)}
             className="bg-blue-600 w-8 h-8 flex items-center justify-center rounded-md text-white hover:bg-blue-700 transition"
           >
-            {product.qty > 1 ? "−" : <Trash />}
+            {qty > 1 ? "−" : <Trash />}
           </button>
 
           <span className="w-8 text-center font-semibold text-white border border-blue-600 rounded-md py-1">
-            {product.qty}
+            {qty}
           </span>
 
           <button
