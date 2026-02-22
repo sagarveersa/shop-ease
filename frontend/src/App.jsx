@@ -1,15 +1,16 @@
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Product from "./pages/Product";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { Products } from "./pages/Products";
-import { Cart } from "./pages/Cart";
-import Home from "./pages/Home";
-import Checkout from "./pages/Checkout";
-import PrivateRoute from "./context/PrivateRoute";
-import Layout from "./components/Layout";
 import "react-toastify/dist/ReactToastify.css";
+import Layout from "./components/Layout";
+import PrivateRoute from "./context/PrivateRoute";
+import { Cart } from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
 import Orders from "./pages/Orders";
+import Product from "./pages/Product";
+import { Products } from "./pages/Products";
+import Profile from "./pages/Profile";
+import Register from "./pages/Register";
 
 const router = createBrowserRouter([
   {
@@ -27,6 +28,10 @@ const router = createBrowserRouter([
       {
         path: "/login",
         element: <Login />,
+      },
+      {
+        path: "/profile",
+        element: <Profile />,
       },
       {
         path: "/products",
