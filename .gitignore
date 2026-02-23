@@ -1,3 +1,4 @@
 frontend/node_modules/
 *venv/
 *jwt_private.pem
+*jwt_public.pem
