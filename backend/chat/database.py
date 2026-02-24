@@ -2,12 +2,13 @@
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+from pathlib import Path
 
-DATABASE_URL = "postgresql+psycopg2://user:password@localhost/db"
+DATABASE_URL = "postgresql+psycopg2://postgres:postgres@localhost:5432/shop_db"
 
 engine = create_engine(
     DATABASE_URL,
-    pool_pre_ping=True
+    echo=True
 )
 
 SessionLocal = sessionmaker(

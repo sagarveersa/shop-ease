@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Profile
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 User = get_user_model()
 
@@ -34,7 +35,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
-
 class LoginSerializer(serializers.Serializer):
     email=serializers.CharField(write_only=True)
     password=serializers.CharField(write_only=True)
@@ -49,6 +49,8 @@ class LoginSerializer(serializers.Serializer):
 
         refresh = RefreshToken.for_user(user)        
         name = user.get_full_name()
+        refresh["name"] = user.get_full_name()
+        refresh["is_staff"] = user.is_staff
 
         return {
             'access': str(refresh.access_token),

@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from products.models import Product
 from location.models import Address
+import uuid
 
 # Create your models here.
 class Order(models.Model):
@@ -13,6 +14,7 @@ class Order(models.Model):
         DELIVERED = "delivered", "Delivered"
         CANCELLED = "cancelled", "Cancelled"
     
+    id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='orders')
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -22,6 +24,7 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
 
+    id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True)
     product_name = models.CharField(max_length=255)

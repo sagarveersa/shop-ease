@@ -1,56 +1,65 @@
 from fastapi import WebSocket
-from typing import List
-from schemas import CustomerMessage, StaffMessage
+from typing import List, Dict
+from schemas import WsMessage
 import random
-
-class WsStaffConnection:
-    def __init__(self, ws: WebSocket, id: str, staff_id: str):
-        self.ws = ws
-        self.id = id 
-        self.staff_id = staff_id
-
-class WsCustomerConnection:
-    def __init__(self, ws: WebSocket, id: str, customer_id: str):
-        self.id = id 
-        self.ws = ws
-        self.customer_id = customer_id
-
+from uuid import UUID
 
 class Pool:
     def __init__(self):
-        self.staff_connections: List[WsStaffConnection] = []
-        self.customer_connections: List[WsCustomerConnection] = []
+        self.connections: dict[UUID, WebSocket] = {}
+        self.rooms: dict[UUID, set[WebSocket]] = {}
+        self.staffs: set[UUID] = set()
     
-    def add_staff(self, ws: WsStaffConnection):
-        self.staff_connections.append(ws)
-        print("[Pool] staff successfully registered")
-    
-    def add_customer(self, ws: WsCustomerConnection):
-        self.customer_connections.append(ws)
-        print("[Pool] customer successfully registered")
-    
-    def send_to_staff(self, msg: CustomerMessage, receiver_id: str):
-        receiver_conn = None 
-        for conn in self.staff_connections:
-            if(conn.staff_id == receiver_id):
-                receiver_conn = conn 
-                break
-    
-        if receiver_conn is not None:
-            text = msg.model_dump_json(indent=2)
-            receiver_conn.ws.send_text(text)
-    
-    def send_to_customer(self, msg: StaffMessage, receiver_id: str):
-        receiver_conn = None 
-        for conn in self.customer_connections:
-            if(conn.customer_id == receiver_id):
-                receiver_conn = conn 
-                break
-    
-        if receiver_conn is not None:
-            text = msg.model_dump_json(indent=2)
-            receiver_conn.ws.send_text(text)
-    
+    def connect(self, user_id: UUID, ws: WebSocket):
+        self.connections[user_id] = ws
+
     def get_staff(self):
-       idx = random.randint(0, len(self.staff_connections)-1)
-       return self.staff_connections[idx].staff_id
+        if(len(self.staffs) == 0):
+            return None
+        staff_id = random.choice(tuple(self.staffs))
+        return staff_id
+
+    def assign_staff_to_room(self, room_id: UUID, staff_id: UUID):
+        staff_ws = self.connections[staff_id]
+        if not staff_ws:
+            print("Staff ws connection not found")
+            return
+
+        self.rooms.setdefault(room_id, set()).add(staff_ws)
+         
+    def register_staff(self, staff_id):
+        self.staffs.add(staff_id)
+        print('[Pool] staff successfully registered')
+    
+    def remove_staff(self, staff_id):
+        self.staffs.discard(staff_id)
+        print('[Pool] staff removed')
+    
+    def join_room(self, room_id, ws: WebSocket):
+        self.rooms.setdefault(room_id, set()).add(ws)
+        print('[Pool] room is joined')
+
+    def leave_room(self, room_id, ws: WebSocket):
+        self.rooms[room_id].discard(ws)
+        if not self.rooms[room_id]:
+            del self.rooms[room_id]
+        
+        print('[Pool] room left')
+    
+    async def send_to_room(self, room_id: str, msg: WsMessage, sender: WebSocket):
+        json_msg = msg.model_dump_json()
+        for ws in self.rooms.get(room_id, []):
+            if ws is not sender:
+                try:
+                    await ws.send_text(json_msg)
+                except Exception:
+                    print("Error occured when broadcasting msg")
+                    pass
+
+    
+    async def send(self, receiver_id: UUID, msg: WsMessage):
+        json_msg = msg.model_dump_json()
+        try:
+            self.connections[receiver_id].send_json(json_msg)
+        except:
+            print("Error sending message")

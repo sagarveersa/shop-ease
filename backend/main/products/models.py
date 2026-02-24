@@ -1,15 +1,18 @@
 from django.db import models
+import uuid
 
 # Create your models here.
 class Category(models.Model):
     class Meta:
         db_table = "categories"
+    id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(unique=True)
 
     def __str__(self):
         return self.name
 
 class Product(models.Model):
+    id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField()
     category = models.ForeignKey(Category, null=True, on_delete=models.SET_NULL)
     price = models.DecimalField(max_digits=5, decimal_places=2)
@@ -22,4 +25,4 @@ class Product(models.Model):
     stock = models.IntegerField(default=0)
 
     def __str__(self):
-        return self.name
+            return self.name

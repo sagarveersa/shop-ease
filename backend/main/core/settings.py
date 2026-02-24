@@ -12,9 +12,14 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+from dotenv import load_dotenv
+import os
+import base64
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(BASE_DIR / ".env")
 
 
 # Quick-start development settings - unsuitable for production
@@ -90,12 +95,15 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "shop_db",
+        "USER": "postgres",
+        "PASSWORD": "postgres",
+        "HOST": "localhost",  # or container name if using docker-compose
+        "PORT": "5432",
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -146,15 +154,16 @@ REST_FRAMEWORK = {
 
 }
 
-with open(BASE_DIR / 'core/keys/jwt_private.pem') as f:
-    PRIVATE_KEY = f.read()
+PRIVATE_KEY = base64.b64decode(
+    os.getenv("JWT_PRIVATE_KEY_B64")
+).decode("utf-8")
 
-with open(BASE_DIR / 'core/keys/jwt_public.pem') as f:
-    PUBLIC_KEY = f.read()
-
+PUBLIC_KEY = base64.b64decode(
+    os.getenv("JWT_PUBLIC_KEY_B64")
+).decode("utf-8")
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(seconds=10),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=10),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,

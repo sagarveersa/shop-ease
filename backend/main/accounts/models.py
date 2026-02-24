@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import BaseUserManager
 from django.core.exceptions import ValidationError
+import uuid
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -28,6 +29,11 @@ class CustomUserManager(BaseUserManager):
 
 
 class User(AbstractUser):
+    id = models.UUIDField(
+            primary_key=True,
+            default=uuid.uuid4,
+            editable=False
+        )
     username = None
     email = models.EmailField(unique=True)
 
@@ -37,5 +43,6 @@ class User(AbstractUser):
     objects = CustomUserManager()
 
 class Profile(models.Model):
+    id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     profile_img = models.CharField(max_length=255, null=True, blank=True)

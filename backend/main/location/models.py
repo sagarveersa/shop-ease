@@ -1,6 +1,8 @@
 from django.db import models
+import uuid
 
 class Country(models.Model):
+    id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=2)
 
@@ -8,6 +10,7 @@ class Country(models.Model):
         return self.name
 
 class Province(models.Model):
+    id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
 
@@ -21,6 +24,7 @@ class Province(models.Model):
         return self.name
 
 class City(models.Model):
+    id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     province = models.ForeignKey(Province, on_delete=models.CASCADE)
 
@@ -38,6 +42,7 @@ class Address(models.Model):
     Address is a historical record kind of an archive and once a record is set it should not change even if 
     related data changes.
     """
+    id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     country = models.ForeignKey(Country, on_delete=models.PROTECT)
     province = models.ForeignKey(Province, on_delete=models.PROTECT)
     city = models.ForeignKey(City, on_delete=models.PROTECT)
