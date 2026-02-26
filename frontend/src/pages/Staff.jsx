@@ -8,7 +8,8 @@ import {
 import { useCallback, useEffect, useReducer, useRef } from "react";
 import { Navbar } from "../components/Navbar";
 
-const WS_ENDPOINT = "ws://localhost:8004/ws/";
+const WS_ENDPOINT =
+  import.meta.VITE_CHAT_API_URL || "ws://localhost:8004/api/ws/";
 
 const initialState = {
   connectionStatus: "connecting",
@@ -78,7 +79,10 @@ function reducer(state, action) {
         ...state,
         registrationStatus: "failed",
         registrationMessage: action.payload || "Failed to register staff",
-        logItems: [...state.logItems, action.payload || "Staff registration failed"],
+        logItems: [
+          ...state.logItems,
+          action.payload || "Staff registration failed",
+        ],
       };
     case "ROOM_ASSIGNED": {
       const { roomId, guestId } = action.payload;
@@ -235,7 +239,9 @@ function getStaffIdFromToken(token) {
       .replace(/_/g, "/")
       .padEnd(Math.ceil(payloadPart.length / 4) * 4, "=");
     const claims = JSON.parse(atob(normalized));
-    return claims.staff_id || claims.user_id || claims.sub || claims.id || "staff";
+    return (
+      claims.staff_id || claims.user_id || claims.sub || claims.id || "staff"
+    );
   } catch {
     return "staff";
   }
@@ -250,7 +256,9 @@ export default function Staff() {
   const localTypingToggleEchoByRoomRef = useRef({});
   const previousActiveRoomRef = useRef("");
 
-  const activeRoom = state.activeRoomId ? state.rooms[state.activeRoomId] : null;
+  const activeRoom = state.activeRoomId
+    ? state.rooms[state.activeRoomId]
+    : null;
   const canSend =
     state.connectionStatus === "connected" &&
     state.registrationStatus === "success" &&
@@ -322,7 +330,6 @@ export default function Staff() {
         },
       }),
     );
-
   };
 
   const sendUnregisterStaff = () => {
@@ -552,7 +559,9 @@ export default function Staff() {
                   <h1 className="text-xl md:text-2xl font-semibold">
                     Staff Chat Console
                   </h1>
-                  <p className="text-sm text-gray-400">Sender ID: {state.staffId}</p>
+                  <p className="text-sm text-gray-400">
+                    Sender ID: {state.staffId}
+                  </p>
                 </div>
               </div>
 
@@ -611,7 +620,10 @@ export default function Staff() {
                         key={roomId}
                         type="button"
                         onClick={() =>
-                          dispatch({ type: "ACTIVE_ROOM_CHANGED", payload: roomId })
+                          dispatch({
+                            type: "ACTIVE_ROOM_CHANGED",
+                            payload: roomId,
+                          })
                         }
                         className={`w-full text-left rounded-xl border px-3 py-3 transition ${
                           isActive
@@ -619,7 +631,9 @@ export default function Staff() {
                             : "border-gray-800 bg-gray-950/55 hover:border-gray-700"
                         }`}
                       >
-                        <p className="text-sm font-medium truncate">{room.roomId}</p>
+                        <p className="text-sm font-medium truncate">
+                          {room.roomId}
+                        </p>
                         <p className="text-xs text-gray-400 mt-1 truncate">
                           Guest: {room.guestId}
                         </p>
@@ -648,13 +662,20 @@ export default function Staff() {
               <header className="px-4 py-3 border-b border-gray-800 bg-gray-900/90 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-semibold">
-                    {activeRoom ? `Room: ${activeRoom.roomId}` : "No room selected"}
+                    {activeRoom
+                      ? `Room: ${activeRoom.roomId}`
+                      : "No room selected"}
                   </p>
                   <p className="text-xs text-gray-400">
-                    {activeRoom ? `Guest ID: ${activeRoom.guestId}` : "Select a room"}
+                    {activeRoom
+                      ? `Guest ID: ${activeRoom.guestId}`
+                      : "Select a room"}
                   </p>
-                  {activeRoom?.status === "open" && activeRoom?.isGuestTyping ? (
-                    <p className="text-xs text-blue-300 mt-1">User is typing...</p>
+                  {activeRoom?.status === "open" &&
+                  activeRoom?.isGuestTyping ? (
+                    <p className="text-xs text-blue-300 mt-1">
+                      User is typing...
+                    </p>
                   ) : null}
                 </div>
                 <div className="text-xs text-gray-400">
@@ -700,7 +721,9 @@ export default function Staff() {
                 <div className="flex items-center gap-2">
                   <input
                     value={state.composerText}
-                    onChange={(event) => handleComposerChange(event.target.value)}
+                    onChange={(event) =>
+                      handleComposerChange(event.target.value)
+                    }
                     onKeyDown={(event) => {
                       if (event.key === "Enter") sendMessage();
                     }}
@@ -735,11 +758,17 @@ export default function Staff() {
               {state.logItems.length === 0 ? (
                 <p className="text-xs text-gray-500">No events yet.</p>
               ) : (
-                state.logItems.slice().reverse().map((item, index) => (
-                  <p key={`${item}-${index}`} className="text-xs text-gray-400">
-                    {item}
-                  </p>
-                ))
+                state.logItems
+                  .slice()
+                  .reverse()
+                  .map((item, index) => (
+                    <p
+                      key={`${item}-${index}`}
+                      className="text-xs text-gray-400"
+                    >
+                      {item}
+                    </p>
+                  ))
               )}
             </div>
           </section>

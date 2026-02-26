@@ -1,11 +1,10 @@
 import { useContext, useEffect, useReducer } from "react";
-import { Navbar } from "../components/Navbar";
-import { checkoutContext } from "../context/CheckoutContext";
 import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { OrderService } from "../service/order";
 import CheckoutOverlay from "../components/CheckoutOverlay";
-import DropdownItem from "../components/DropdownItem";
+import { Navbar } from "../components/Navbar";
+import { checkoutContext } from "../context/CheckoutContext";
+import { OrderService } from "../service/order";
 
 const initialState = {
   form: {
@@ -68,10 +67,6 @@ export default function Checkout() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const navigate = useNavigate();
 
-  if (!checkoutItems || !setCheckoutItems) {
-    return <Navigate to="/login" />;
-  }
-
   // compute total price
   // these are derived values they are not stored as state variables because they don't change the component
   // instead they some other state variable changes the component and these values.
@@ -99,6 +94,10 @@ export default function Checkout() {
       // dispatch({ type: "checkout/reset" });
     }
   }, [state.status]);
+
+  if (!checkoutItems || !setCheckoutItems) {
+    return <Navigate to="/login" />;
+  }
 
   const handleFieldUpdate = (field, value) => {
     dispatch({ type: "checkout/setField", field: field, value: value });

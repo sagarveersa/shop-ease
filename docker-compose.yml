@@ -1,0 +1,130 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: shop_ease_db
+    environment:
+      POSTGRES_DB: shop_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d shop_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    container_name: shop_ease_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  django:
+    build:
+      context: ./backend/main
+      dockerfile: Dockerfile
+    container_name: shop_ease_django
+    env_file:
+      - ./backend/main/.env
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_POST: "5432"
+      DB_NAME: shop_db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      WAIT_FOR_DB: "true"
+      WAIT_FOR_REDIS: "true"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ./backend/main
+      dockerfile: Dockerfile
+    container_name: shop_ease_worker
+    env_file:
+      - ./backend/main/.env
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_POST: "5432"
+      DB_NAME: shop_db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      WAIT_FOR_DB: "true"
+      WAIT_FOR_REDIS: "true"
+    command: >
+      sh -c "python scripts/wait_for_services.py &&
+             celery -A core worker --loglevel=info"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  chat:
+    build:
+      context: ./backend/chat
+      dockerfile: Dockerfile
+    container_name: shop_ease_chat
+    env_file:
+      - ./backend/chat/.env
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: shop_db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      WAIT_FOR_DB: "true"
+      WAIT_FOR_REDIS: "true"
+    ports:
+      - "8004:8004"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: shop_ease_frontend
+    environment:
+      VITE_API_URL: http://localhost:8000/api/
+      VITE_CHAT_API_URL: ws://localhost:8004/api/ws/
+    ports:
+      - "5173:5173"
+    depends_on:
+      - django
+      - chat
+
+volumes:
+  postgres_data:
+  redis_data:

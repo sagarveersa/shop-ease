@@ -2,7 +2,8 @@ import { MessageCircle, Send, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
-const WS_ENDPOINT = "ws://localhost:8004/ws/";
+const WS_ENDPOINT =
+  import.meta.VITE_CHAT_API_URL || "ws://localhost:8004/api/ws/";
 
 function safeParseMessage(raw) {
   if (typeof raw !== "string") return null;
@@ -67,7 +68,11 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
   };
 
   const sendTypingToggle = (targetRoomId) => {
-    if (!socketRef.current || !targetRoomId || connectionState !== "connected") {
+    if (
+      !socketRef.current ||
+      !targetRoomId ||
+      connectionState !== "connected"
+    ) {
       return;
     }
     localTypingToggleEchoCountRef.current += 1;
@@ -89,6 +94,7 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
 
   useEffect(() => {
     const socket = new WebSocket(endpoint);
+    console.log(`sending ws request to ${endpoint}`);
     socketRef.current = socket;
 
     socket.onopen = () => {
@@ -303,7 +309,9 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
         <div className="w-[min(92vw,24rem)] h-[30rem] rounded-2xl border border-gray-800 bg-gray-900 text-white shadow-2xl overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800 bg-gray-900/95">
             <div>
-              <p className="text-sm font-semibold text-gray-100">Live Support</p>
+              <p className="text-sm font-semibold text-gray-100">
+                Live Support
+              </p>
               <p className="text-xs text-gray-400">
                 {connectionState === "connected"
                   ? roomId
@@ -386,7 +394,9 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
                   if (e.key === "Enter") sendMessage();
                 }}
                 disabled={!roomId}
-                placeholder={roomId ? "Type a message..." : "Waiting for room..."}
+                placeholder={
+                  roomId ? "Type a message..." : "Waiting for room..."
+                }
                 className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white placeholder:text-gray-500 outline-none focus:border-blue-500"
               />
               <button

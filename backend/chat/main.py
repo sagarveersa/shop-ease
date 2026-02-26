@@ -55,7 +55,7 @@ class ConnectionType(str, enum.Enum):
     STAFF = "staff"
     GUEST = "guest"
 
-@app.websocket('/ws/')
+@app.websocket('/api/ws/')
 async def websocket_customer(conn: WebSocket,  db: Session = Depends(get_db)):
     pool = conn.app.state.pool
 

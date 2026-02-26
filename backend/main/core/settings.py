@@ -26,7 +26,7 @@ load_dotenv(BASE_DIR / ".env")
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-0m+t8=om3t4lw3n^78i8p22^n7*p4rsgk4#t=1egbh)-4x3a2s'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'secret-key') 
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -97,11 +97,11 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "shop_db",
-        "USER": "postgres",
-        "PASSWORD": "postgres",
-        "HOST": "localhost",  # or container name if using docker-compose
-        "PORT": "5432",
+        "NAME": os.environ.get('DB_NAME', "default"),
+        "USER": os.environ.get('DB_USER', "postgres"),
+        "PASSWORD": os.environ.get('DB_PASSWORD', "postgres"),
+        "HOST": os.environ.get('DB_HOST', "localhost"),  # or container name if using docker-compose
+        "PORT": os.environ.get('DB_POST', "5432"),
     }
 }
 
@@ -179,8 +179,8 @@ SIMPLE_JWT = {
 
 
 
-CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
-CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/1"
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', "redis://127.0.0.1:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND')
 
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
@@ -192,6 +192,6 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = "remedix70@gmail.com"
-EMAIL_HOST_PASSWORD = "pissvwsvpfzuzfio"
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'test_email@mail.com')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'test_password')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

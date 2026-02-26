@@ -1,11 +1,12 @@
 import { useContext } from "react";
-import { cartContext } from "../context/CartContext";
 import { Link, useNavigate } from "react-router-dom";
+import { cartContext } from "../context/CartContext";
 import { checkoutContext } from "../context/CheckoutContext";
 
 export default function CartSummary() {
   const { cart, totalItems, totalPrice } = useContext(cartContext);
   const { setCheckoutItems } = useContext(checkoutContext);
+  const navigate = useNavigate();
 
   const checkout = () => {
     // convert cart from an object with productId as keys to a list of products
