@@ -2,6 +2,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import Layout from "./components/Layout";
 import PrivateRoute from "./context/PrivateRoute";
+import StaffRoute from "./context/StaffRoute";
 import { Cart } from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Home from "./pages/Home";
@@ -11,6 +12,7 @@ import Product from "./pages/Product";
 import { Products } from "./pages/Products";
 import Profile from "./pages/Profile";
 import Register from "./pages/Register";
+import Staff from "./pages/Staff";
 
 const router = createBrowserRouter([
   {
@@ -63,6 +65,14 @@ const router = createBrowserRouter([
           <PrivateRoute>
             <Orders />
           </PrivateRoute>
+        ),
+      },
+      {
+        path: "/staff",
+        element: (
+          <StaffRoute>
+            <Staff />
+          </StaffRoute>
         ),
       },
     ],

@@ -1,7 +1,12 @@
 import { Outlet } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
+import ChatBubble from "./ChatBubble";
+import { useContext } from "react";
+import { authContext } from "../context/AuthContext";
 
 export default function Layout() {
+  const { isStaff } = useContext(authContext);
+
   return (
     <>
       <Outlet />
@@ -18,6 +23,7 @@ export default function Layout() {
         theme="dark"
         // transition={Bounce}
       />
+      {!isStaff ? <ChatBubble /> : null}
     </>
   );
 }

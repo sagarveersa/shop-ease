@@ -1,13 +1,14 @@
+import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
-import { authContext } from "../context/AuthContext";
-import { Navbar } from "../components/Navbar";
 import { toast } from "react-toastify";
+import { Navbar } from "../components/Navbar";
+import { authContext } from "../context/AuthContext";
 import { baseURL } from "../service/api";
-import axios from "axios";
 
 export default function Login() {
-  const { setToken, loggedIn, setUserID, setName } = useContext(authContext);
+  const { setToken, loggedIn, setUserID, setName, setIsStaff } =
+    useContext(authContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -40,7 +41,8 @@ export default function Login() {
       const refreshToken = response.data.refresh;
 
       const userID = response.data.userID;
-      const name = response.data.name;
+      const name = response.data.name ? response.data.name : "Unnamed";
+      const isStaff = response.data.isStaff;
       if (!accessToken || !refreshToken || !userID || !name) {
         setError("Server Error");
         return;
@@ -56,10 +58,14 @@ export default function Login() {
       setName(name);
       localStorage.setItem("name", name);
 
+      console.log("Type of isStaff", typeof isStaff);
+      setIsStaff(isStaff);
+      localStorage.setItem("isStaff", isStaff);
+
       setError(null);
       navigate("/");
     } catch (error) {
-      setError(response.data.error);
+      setError(error);
       console.log(error);
     } finally {
       setLoading(false);

@@ -1,11 +1,11 @@
 import { useContext, useState } from "react";
-import { Search, ShoppingBag, ShoppingCart, User } from "lucide-react";
+import { Search, ShoppingBag, ShoppingCart } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { authContext } from "../context/AuthContext";
 import UserDropdown from "./UserDropdown";
 
 export default function SearchBar() {
-  const { loggedIn, name, logout } = useContext(authContext);
+  const { loggedIn, isStaff } = useContext(authContext);
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
 
@@ -63,6 +63,17 @@ export default function SearchBar() {
         <Link to="/cart" className="relative hover:text-blue-400 transition">
           <ShoppingCart className="w-6 h-6" />
         </Link>
+
+        {loggedIn && isStaff ? (
+          <Link
+            to="/staff"
+            className="hidden sm:inline-flex items-center px-4 py-2 rounded-lg 
+               bg-emerald-600 text-white text-sm font-medium
+               hover:bg-emerald-700 transition"
+          >
+            Staff Dashboard
+          </Link>
+        ) : null}
 
         {/* User Section */}
         {loggedIn ? (

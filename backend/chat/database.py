@@ -8,7 +8,7 @@ DATABASE_URL = "postgresql+psycopg2://postgres:postgres@localhost:5432/shop_db"
 
 engine = create_engine(
     DATABASE_URL,
-    echo=True
+    # echo=True
 )
 
 SessionLocal = sessionmaker(

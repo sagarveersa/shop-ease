@@ -13,6 +13,9 @@ from schemas import WsMessage
 from pydantic import ValidationError, TypeAdapter
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from uuid import UUID
+import enum
+import schemas
 
 Base.metadata.create_all(bind=engine)
 
@@ -48,6 +51,10 @@ async def get_staff_rooms(req: Request, db: Session = Depends(get_db), credentia
     sessions = result.scalars().all()
     return sessions
 
+class ConnectionType(str, enum.Enum):
+    STAFF = "staff"
+    GUEST = "guest"
+
 @app.websocket('/ws/')
 async def websocket_customer(conn: WebSocket,  db: Session = Depends(get_db)):
     pool = conn.app.state.pool
@@ -56,6 +63,7 @@ async def websocket_customer(conn: WebSocket,  db: Session = Depends(get_db)):
     await conn.send_text("websocket connected")
 
     ws_adaptor = TypeAdapter(WsMessage)
+
     try:
         while True:
             raw = await conn.receive_text()
@@ -69,7 +77,8 @@ async def websocket_customer(conn: WebSocket,  db: Session = Depends(get_db)):
                         "errors": e.errors()
                     }
                 })
-    except WebSocketDisconnect:
+    except WebSocketDisconnect: 
+        await pool.remove_conn(conn)
         print("Client Disconnected") 
 
 

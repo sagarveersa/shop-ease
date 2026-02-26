@@ -176,3 +176,22 @@ SIMPLE_JWT = {
     'USER_ID_FIELD': 'id', # which field on the User model uniquely defines the user
     'USER_ID_CLAIM': 'user_id', # what key name to use inside the jwt payload
 }
+
+
+
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/1"
+
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = "remedix70@gmail.com"
+EMAIL_HOST_PASSWORD = "pissvwsvpfzuzfio"
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

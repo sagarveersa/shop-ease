@@ -39,10 +39,26 @@ class SuccessPayload(BaseModel):
 class RoomCreatedPayload(BaseModel):
     room_id: UUID
 
+class GuestLeftRoomPayload(BaseModel):
+    room_id: UUID
+    guest_id: UUID
+
+class StaffLeftRoomPayload(BaseModel):
+    room_id: UUID
+    staff_id: UUID
+
+class UnregisterStaffPayload(BaseModel):
+    token: str
+    
+
 # Events
 class RegisterStaffEvent(BaseModel):
     type: Literal["RegisterStaff"]
     data: RegisterStaff
+
+class UnregisterStaffEvent(BaseModel):
+    type: Literal["UnregisterStaff"]
+    data: UnregisterStaffPayload
 
 class StartGuestRoomEvent(BaseModel):
     type: Literal["StartGuestRoom"]
@@ -64,6 +80,20 @@ class RoomAssignedEvent(BaseModel):
     type: Literal["RoomAssigned"]
     data: RoomAssigned
 
+class GuestLeftRoomEvent(BaseModel):
+    type: Literal["GuestLeftRoom"]
+    data: GuestLeftRoomPayload
+
+class StaffLeftRoomEvent(BaseModel):
+    type: Literal["StaffLeftRoom"]
+    data: StaffLeftRoomPayload
+
+class StaffAvailableEvent(BaseModel):
+    type: Literal["StaffAvailable"]
+
+class StaffNotAvailableEvent(BaseModel):
+    type: Literal["StaffNotAvailable"]
+
 # Responses
 class ErrorResponse(BaseModel):
     type: Literal["Error"]
@@ -79,6 +109,6 @@ class RoomCreatedResponse(BaseModel):
 
 # Websocket Message
 WsMessage = Annotated[
-    Union[ErrorResponse, RegisterStaffEvent, StartGuestRoomEvent, RoomMessageEvent, TypingToggleEvent, RoomAssignedEvent, RoomClosedEvent],
+    Union[ErrorResponse, RegisterStaffEvent, StartGuestRoomEvent, RoomMessageEvent, TypingToggleEvent, RoomAssignedEvent, RoomClosedEvent, StaffLeftRoomEvent, GuestLeftRoomEvent, StaffAvailableEvent, StaffNotAvailableEvent, UnregisterStaffEvent],
     Field(discriminator="type")
 ]

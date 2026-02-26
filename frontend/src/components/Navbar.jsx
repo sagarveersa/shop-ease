@@ -1,4 +1,4 @@
-import { ShoppingBag, ShoppingCart, User } from "lucide-react";
+import { ShoppingBag, ShoppingCart } from "lucide-react";
 import { useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { authContext } from "../context/AuthContext";
@@ -6,7 +6,7 @@ import UserDropdown from "./UserDropdown";
 
 export function Navbar() {
   const location = useLocation();
-  const { loggedIn, name, logout } = useContext(authContext);
+  const { loggedIn, isStaff } = useContext(authContext);
 
   return (
     <nav className="bg-gray-900 h-16 fixed top-0 left-0 w-full z-50 border-b border-gray-800">
@@ -44,6 +44,17 @@ export function Navbar() {
                   Browse Products
                 </Link>
               )}
+
+              {loggedIn && isStaff ? (
+                <Link
+                  to="/staff"
+                  className="hidden sm:inline-flex items-center px-4 py-2 rounded-lg 
+                     bg-emerald-600 text-white text-sm font-medium
+                     hover:bg-emerald-700 transition"
+                >
+                  Staff Dashboard
+                </Link>
+              ) : null}
 
               {/* User Section */}
               {loggedIn ? (
