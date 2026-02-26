@@ -9,21 +9,29 @@ from sqlalchemy import (
     UUID,
     Text,
     ForeignKey,
-    Enum
+    Enum,
+    Table,
+    MetaData
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from uuid import uuid4
-from database import Base
+from database import Base, engine
 from datetime import datetime, timezone
+
+metadata = Base.metadata
 
 def utc_now():
     return datetime.now(timezone.utc)
 
-class DjangoUser(Base):
-    __tablename__="accounts_user"
+django_user_table = Table(
+    "accounts_user",
+    metadata,
+    autoload_with=engine
+)
 
-    id = Column(UUID(as_uuid=True), default=uuid4, primary_key=True)
+class DjangoUser(Base):
+    __tablename__=django_user_table
 
 # ---- ENUM ----
 class ChatStatus(str, enum.Enum):

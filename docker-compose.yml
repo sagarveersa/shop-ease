@@ -29,6 +29,13 @@ services:
       timeout: 5s
       retries: 12
 
+  migrate:
+    build: ./backend/main
+    command: python manage.py migrate
+    depends_on:
+      db:
+        condition: service_healthy
+
   django:
     build:
       context: ./backend/main
