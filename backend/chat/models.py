@@ -27,11 +27,14 @@ def utc_now():
 django_user_table = Table(
     "accounts_user",
     metadata,
-    autoload_with=engine
+    autoload_with=engine,
+    schema=None
 )
 
 class DjangoUser(Base):
-    __tablename__=django_user_table
+    __table__=django_user_table
+    
+    # id = Column(UUID(as_uuid=True), default=uuid4, primary_key=True)
 
 # ---- ENUM ----
 class ChatStatus(str, enum.Enum):

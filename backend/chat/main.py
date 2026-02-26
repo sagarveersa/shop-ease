@@ -1,20 +1,24 @@
 from fastapi import FastAPI, WebSocket, Request, Depends, WebSocketDisconnect, status
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from database import engine, Base, get_db
-from models import ChatRoom, ChatStatus, RoomMessage
+from database import engine, Base, get_db, wait_for_schema
 from contextlib import asynccontextmanager
-from websocket.pool import Pool
-from websocket.handler import ws_handler
 from jwt import decode_token
 import uvicorn
 from uuid import uuid4
-from schemas import WsMessage
 from pydantic import ValidationError, TypeAdapter
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from uuid import UUID
 import enum
+
+# wait until all the tables have been created by django service
+# specially we want it to wait before models file is executed
+wait_for_schema()
+from models import ChatRoom, ChatStatus, RoomMessage
+from websocket.pool import Pool
+from websocket.handler import ws_handler
+from schemas import WsMessage
 import schemas
 
 Base.metadata.create_all(bind=engine)
