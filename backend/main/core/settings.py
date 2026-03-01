@@ -197,4 +197,19 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'test_password')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 AUTH0_DOMAIN = os.environ.get("AUTH0_DOMAIN", "your-tenant.us.auth0.com")
+AUTH0_CLIENT_ID = os.environ.get("AUTH0_CLIENT_ID", "")
+AUTH0_CLIENT_SECRET = os.environ.get("AUTH0_CLIENT_SECRET", "")
+AUTH0_CALLBACK_URL = os.environ.get(
+    "AUTH0_CALLBACK_URL",
+    "http://localhost:8000/api/accounts/oauth/token/",
+)
+AUTH0_FRONTEND_SUCCESS_URL = os.environ.get(
+    "AUTH0_FRONTEND_SUCCESS_URL",
+    "http://localhost:5173/login",
+)
+AUTH0_FRONTEND_FAILURE_URL = os.environ.get(
+    "AUTH0_FRONTEND_FAILURE_URL",
+    "http://localhost:5173/login",
+)
+AUTH0_SCOPE = os.environ.get("AUTH0_SCOPE", "openid profile email")
 API_AUDIENCE = os.environ.get("API_AUDIENCE", "https://my-api.example.com")

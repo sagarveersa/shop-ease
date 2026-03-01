@@ -34,7 +34,10 @@ class OrderViewSet(ModelViewSet):
         order = self.perform_create(serializer, request)
 
         # send mail 
-        send_order_confirmation_email.delay(order.id)
+        try:
+            send_order_confirmation_email.delay(order.id)
+        except:
+            print('[OrderViewSet] Error sending task to celery')
         
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
