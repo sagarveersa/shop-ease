@@ -1,11 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Navbar } from "../components/Navbar";
 import { baseURL } from "../service/api";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { authContext } from "../context/AuthContext";
 
 export default function Register() {
+  const { useAuth0, loginWithAuth0 } = useContext(authContext);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,23 +22,33 @@ export default function Register() {
     }
   }, [error]);
 
-  const handleForm = async () => {
+  const handleLocalAuth = async () => {
     setLoading(true);
 
     try {
-      const response = axios.post(`${baseURL}accounts/register/`, {
+      await axios.post(`${baseURL}accounts/register/`, {
         name: name,
         email: email,
         password: password,
       });
 
+      toast.success("Registration successful! Please log in.");
       navigate("/login");
     } catch (error) {
-      setError(error?.response?.data?.detail);
+      setError(error?.response?.data?.detail || "Registration failed");
       console.log(error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAuth0Signup = () => {
+    loginWithAuth0({
+      authorizationParams: {
+        screen_hint: "signup",
+        audience: import.meta.env.VITE_AUTH0_AUDIENCE,
+      },
+    });
   };
 
   return (
@@ -55,78 +67,89 @@ export default function Register() {
               </p>
             </div>
 
-            <div className="space-y-5">
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-300 mb-2"
-                >
-                  Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  placeholder="John Doe"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                />
-              </div>
+            {!useAuth0 ? (
+              <div className="space-y-5">
+                <div>
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-300 mb-2"
+                  >
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    placeholder="John Doe"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  />
+                </div>
 
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-300 mb-2"
-                >
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                />
-              </div>
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-300 mb-2"
+                  >
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  />
+                </div>
 
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-300 mb-2"
-                >
-                  Password
-                </label>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                />
-              </div>
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-gray-300 mb-2"
+                  >
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  />
+                </div>
 
-              {!loading && (
+                {!loading && (
+                  <button
+                    type="submit"
+                    onClick={() => {
+                      handleLocalAuth();
+                    }}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    Register
+                  </button>
+                )}
+                {loading && (
+                  <button className="flex flex-row justify-center w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]">
+                    <div className="w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"></div>
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-5">
                 <button
-                  type="submit"
-                  onClick={() => {
-                    handleForm();
-                  }}
+                  onClick={handleAuth0Signup}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  Register
+                  Sign up with Auth0
                 </button>
-              )}
-              {loading && (
-                <button className="flex flex-row justify-center w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]">
-                  <div className="w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"></div>
-                </button>
-              )}
-            </div>
+              </div>
+            )}
 
             <div className="mt-5 text-center">
               <p className="text-gray-400 text-sm">

@@ -34,6 +34,8 @@ class User(AbstractUser):
             default=uuid.uuid4,
             editable=False
         )
+
+    auth0_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
     username = None
     email = models.EmailField(unique=True)
 
@@ -41,6 +43,12 @@ class User(AbstractUser):
     REQUIRED_FIELDS = []
 
     objects = CustomUserManager()
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['email']),
+            models.Index(fields=['auth0_id']),
+        ]
 
 class Profile(models.Model):
     id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

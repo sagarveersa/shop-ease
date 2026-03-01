@@ -70,3 +70,41 @@ class UserDetailSerializer(serializers.ModelSerializer):
     
     def get_name(self, obj):
         return obj.get_full_name()
+
+class Auth0PayloadSerializer(serializers.Serializer):
+    iss = serializers.CharField()
+    sub = serializers.CharField()
+    aud = serializers.CharField()
+    iat = serializers.IntegerField()
+    exp = serializers.IntegerField()
+    azp = serializers.CharField()
+    scope = serializers.CharField()
+
+class Auth0UserMappingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'name')
+        read_only_fields=('id',)
+    
+    def create(self, validated_data):
+        name = validated_data.pop('name', '').split(" ")
+        validated_data['first_name'] = name[0]
+        if(len(name)==2):
+            validated_data['last_name'] = name[1]
+
+        print(validated_data)
+        
+        user = User(**validated_data)
+        user.set_unusable_password()
+        user.save()
+        return user
+    
+    def update(self, instance, validated_data):
+        name = validated_data.pop('name', '').split(" ")
+        instance.first_name = name[0]
+        if(len(name)==2):
+            instance.last_name = name[1]
+
+        instance.email = validated_data.get('email', instance.email)
+        instance.save()
+        return instance

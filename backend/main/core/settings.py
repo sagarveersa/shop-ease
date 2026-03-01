@@ -97,7 +97,7 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get('DB_NAME', "default"),
+        "NAME": os.environ.get('DB_NAME', "shop_db"),
         "USER": os.environ.get('DB_USER', "postgres"),
         "PASSWORD": os.environ.get('DB_PASSWORD', "postgres"),
         "HOST": os.environ.get('DB_HOST', "localhost"),  # or container name if using docker-compose
@@ -195,3 +195,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'test_email@mail.com')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'test_password')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+AUTH0_DOMAIN = os.environ.get("AUTH0_DOMAIN", "your-tenant.us.auth0.com")
+API_AUDIENCE = os.environ.get("API_AUDIENCE", "https://my-api.example.com")

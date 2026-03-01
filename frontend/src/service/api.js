@@ -29,6 +29,21 @@ export const api = axios.create({
   },
 });
 
+// Auth config for handling different auth methods
+let auth0Instance = null;
+
+/**
+ * Setup API authentication for Auth0 or local auth
+ * Call this from AuthProvider when the auth method is determined
+ */
+export function setupApiAuth(authConfig) {
+  if (authConfig && authConfig.auth0) {
+    auth0Instance = authConfig.auth0;
+  } else {
+    auth0Instance = null;
+  }
+}
+
 api.interceptors.request.use((config) => {
   if (config.data) {
     if (typeof config.data === "string") {
@@ -51,7 +66,26 @@ api.interceptors.request.use((config) => {
 // Add a request interceptor to add the auth token to every request
 api.interceptors.request.use(
   async (config) => {
-    const token = localStorage.getItem("accessToken");
+    let token;
+
+    if (auth0Instance) {
+      // Auth0 flow: get token silently (handles caching and refresh)
+      try {
+        token = await auth0Instance.getAccessTokenSilently({
+          audience: import.meta.env.VITE_AUTH0_AUDIENCE,
+        });
+      } catch (error) {
+        console.error(
+          "[Request Interceptor] Failed to get Auth0 token:",
+          error,
+        );
+        return Promise.reject(error);
+      }
+    } else {
+      // Local auth flow: get token from localStorage
+      token = localStorage.getItem("accessToken");
+    }
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -62,7 +96,7 @@ api.interceptors.request.use(
   },
 );
 
-// Refresh access token
+// Refresh access token (for local auth only)
 let isRefreshing = false;
 let refreshSubscribers = [];
 
@@ -79,6 +113,8 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+
+    // Don't retry if not a 401 or if already retried
     if (error.response?.status !== 401 || originalRequest._retry) {
       return Promise.reject(error);
     }
@@ -86,14 +122,38 @@ api.interceptors.response.use(
     // _retry is custom attribute added to prevent infinite loop
     originalRequest._retry = true;
 
+    // For Auth0: let it handle token refresh automatically via getAccessTokenSilently
+    if (auth0Instance) {
+      try {
+        // Get fresh token from Auth0 (will refresh if needed)
+        const newToken = await auth0Instance.getAccessTokenSilently({
+          audience: import.meta.env.VITE_AUTH0_AUDIENCE,
+          cache: false,
+        });
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        return api(originalRequest);
+      } catch (err) {
+        // Auth0 refresh failed - logout
+        console.error(
+          "[Response Interceptor] Auth0 token refresh failed:",
+          err,
+        );
+        auth0Instance.logout({
+          logoutParams: { returnTo: window.location.origin },
+        });
+        return Promise.reject(err);
+      }
+    }
+
+    // For local auth: use refresh token to get new access token
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
         subscribeTokenRefresh((newAccessToken) => {
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           resolve(api(originalRequest));
-        }); // subscribeTokenRefresh call ends here
-      }); // return statement ends here
-    } // if ends here
+        });
+      });
+    }
 
     isRefreshing = true;
     try {
@@ -120,13 +180,16 @@ api.interceptors.response.use(
       // refresh failed -> logout
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
+      localStorage.removeItem("userID");
+      localStorage.removeItem("name");
+      localStorage.removeItem("isStaff");
 
       window.location.href = "/login";
       return Promise.reject(error);
     } finally {
       isRefreshing = false;
     }
-  }, // onRejection callback ends here
+  },
 );
 
 api.interceptors.response.use((response) => {
