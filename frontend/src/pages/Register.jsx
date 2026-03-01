@@ -35,7 +35,11 @@ export default function Register() {
       toast.success("Registration successful! Please log in.");
       navigate("/login");
     } catch (error) {
-      setError(error?.response?.data?.detail || "Registration failed");
+      setError(
+        error?.response?.data?.detail ||
+          error?.response?.data?.details ||
+          "Registration failed",
+      );
       console.log(error);
     } finally {
       setLoading(false);

@@ -19,7 +19,7 @@ function reducer(state, action) {
       return {
         ...state,
         status: "success",
-        orders: action.payload,
+        orders: Array.isArray(action.payload) ? action.payload : [],
       };
 
     case "orders/error":
@@ -48,9 +48,21 @@ export default function Orders() {
           signal: controller.signal,
         });
 
+        if (res.status === "aborted") {
+          return;
+        }
+
+        if (res.status !== "success") {
+          dispatch({
+            type: "orders/error",
+            error: "Failed to load orders",
+          });
+          return;
+        }
+
         dispatch({
           type: "orders/success",
-          payload: res.data.orders,
+          payload: res.data?.orders ?? [],
         });
       } catch (err) {
         if (err.name === "CanceledError") return;
@@ -90,7 +102,7 @@ export default function Orders() {
             )}
 
             {/* Empty */}
-            {state.status === "success" && state.orders.length === 0 && (
+            {state.status === "success" && (state.orders?.length ?? 0) === 0 && (
               <div className="bg-[#162338] border border-white/10 rounded-xl p-10 text-center text-gray-300">
                 <p className="text-lg font-semibold">No orders yet 🛒</p>
                 <p className="text-gray-400 mt-2">
@@ -100,7 +112,7 @@ export default function Orders() {
             )}
 
             {/* Orders */}
-            {state.orders.map((order) => (
+            {(state.orders ?? []).map((order) => (
               <div
                 key={order.id}
                 //     className="

@@ -58,7 +58,7 @@ export default function SearchBar() {
       </div>
 
       {/* Right Actions */}
-      <div className="flex items-center gap-4 text-white">
+      <div className="flex items-center gap-5 text-white">
         {/* Cart */}
         <Link to="/cart" className="relative hover:text-blue-400 transition">
           <ShoppingCart className="w-6 h-6" />
@@ -77,16 +77,8 @@ export default function SearchBar() {
 
         {/* User Section */}
         {loggedIn ? (
-          <div className="flex items-center gap-3">
-            {/* Avatar Button */}
-            <button className="flex items-center gap-2 px-3 py-2 rounded-full bg-gray-800 hover:bg-gray-700 transition">
-              <div className="relative">
-                <div className="h-8 w-16 rounded-full bg-blue-600 flex items-center justify-center">
-                  {/* <User className="h-4 w-4 text-white" /> */}
-                  <UserDropdown />
-                </div>
-              </div>
-            </button>
+          <div className="ml-2 flex items-center">
+            <UserDropdown />
           </div>
         ) : (
           <Link to="/login">

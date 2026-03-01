@@ -1,228 +1,313 @@
-import {
-  CheckCircle2,
-  CreditCard,
-  Mail,
-  MapPin,
-  Package,
-  Phone,
-  ShieldCheck,
-  Star,
-  UserRound,
-} from "lucide-react";
+import { Mail, ShieldCheck, UserRound } from "lucide-react";
+import { useContext, useEffect, useReducer } from "react";
+import { Navigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { Navbar } from "../components/Navbar";
+import { authContext } from "../context/AuthContext";
+import { api } from "../service/api";
 
-const profile = {
-  name: "Aarav Sharma",
-  email: "aarav.sharma@example.com",
-  phone: "+1 (555) 019-2234",
-  memberSince: "March 2023",
-  tier: "Gold Member",
+const initialState = {
+  status: "idle",
+  saveStatus: "idle",
+  error: null,
+  saveError: null,
+  isEditing: false,
+  profile: null,
+  form: {
+    name: "",
+    email: "",
+    profileImg: "",
+  },
 };
 
-const stats = [
-  { label: "Total Orders", value: "48", icon: Package },
-  { label: "Cart Items", value: "19", icon: Star },
-  { label: "Saved Cards", value: "2", icon: CreditCard },
-  { label: "Loyalty Points", value: "2,340", icon: ShieldCheck },
-];
+function profileReducer(state, action) {
+  switch (action.type) {
+    case "profile/fetch/request":
+      return { ...state, status: "loading", error: null };
 
-const addresses = [
-  {
-    type: "Home",
-    line1: "214 Willow Street",
-    line2: "San Jose, CA 95112",
-    primary: true,
-  },
-  {
-    type: "Work",
-    line1: "88 Market Ave, Suite 403",
-    line2: "San Francisco, CA 94103",
-    primary: false,
-  },
-];
+    case "profile/fetch/success":
+      return {
+        ...state,
+        status: "success",
+        error: null,
+        profile: action.payload,
+        form: {
+          name: action.payload.name || "",
+          email: action.payload.email || "",
+          profileImg: action.payload.profileImg || "",
+        },
+      };
 
-const payments = [
-  { brand: "Visa", last4: "4242", expiry: "09/28", primary: true },
-  { brand: "Mastercard", last4: "1178", expiry: "02/27", primary: false },
-];
+    case "profile/fetch/failure":
+      return { ...state, status: "error", error: action.payload };
 
-const recentOrders = [
-  {
-    id: "SE-10843",
-    date: "Jan 14, 2026",
-    status: "Delivered",
-    amount: "$124.90",
-  },
-  {
-    id: "SE-10791",
-    date: "Jan 02, 2026",
-    status: "Shipped",
-    amount: "$68.40",
-  },
-  {
-    id: "SE-10658",
-    date: "Dec 21, 2025",
-    status: "Delivered",
-    amount: "$212.00",
-  },
-];
+    case "profile/edit/start":
+      return { ...state, isEditing: true, saveError: null };
+
+    case "profile/edit/cancel":
+      return {
+        ...state,
+        isEditing: false,
+        saveError: null,
+        form: {
+          name: state.profile?.name || "",
+          email: state.profile?.email || "",
+          profileImg: state.profile?.profileImg || "",
+        },
+      };
+
+    case "profile/form/update":
+      return {
+        ...state,
+        form: {
+          ...state.form,
+          [action.payload.field]: action.payload.value,
+        },
+      };
+
+    case "profile/save/request":
+      return { ...state, saveStatus: "loading", saveError: null };
+
+    case "profile/save/success":
+      return {
+        ...state,
+        saveStatus: "success",
+        isEditing: false,
+        saveError: null,
+        profile: action.payload,
+        form: {
+          name: action.payload.name || "",
+          email: action.payload.email || "",
+          profileImg: action.payload.profileImg || "",
+        },
+      };
+
+    case "profile/save/failure":
+      return {
+        ...state,
+        saveStatus: "error",
+        saveError: action.payload,
+      };
+
+    default:
+      return state;
+  }
+}
+
+function formatMemberSince(dateString) {
+  if (!dateString) return "N/A";
+
+  const parsed = new Date(dateString);
+  if (Number.isNaN(parsed.getTime())) return "N/A";
+
+  return parsed.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "long",
+  });
+}
 
 export default function Profile() {
+  const { loggedIn, isStaff, setName } = useContext(authContext);
+  const [state, dispatch] = useReducer(profileReducer, initialState);
+
+  useEffect(() => {
+    if (!loggedIn) return;
+
+    const controller = new AbortController();
+
+    async function loadProfile() {
+      dispatch({ type: "profile/fetch/request" });
+      try {
+        const response = await api.get("accounts/profile/", {
+          signal: controller.signal,
+        });
+        dispatch({ type: "profile/fetch/success", payload: response.data });
+      } catch (error) {
+        if (error.name === "CanceledError") return;
+
+        dispatch({
+          type: "profile/fetch/failure",
+          payload:
+            error?.response?.data?.detail ||
+            error?.response?.data?.details ||
+            "Failed to load profile",
+        });
+      }
+    }
+
+    loadProfile();
+    return () => controller.abort();
+  }, [loggedIn]);
+
+  if (!loggedIn) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const profile = state.profile;
+  const showAvatar = Boolean(state.form.profileImg || profile?.profileImg);
+
+  const onChange = (field, value) => {
+    dispatch({
+      type: "profile/form/update",
+      payload: { field, value },
+    });
+  };
+
+  const onSave = async () => {
+    dispatch({ type: "profile/save/request" });
+
+    try {
+      const payload = {
+        name: state.form.name.trim(),
+        email: state.form.email.trim(),
+        profileImg: state.form.profileImg.trim(),
+      };
+      const response = await api.patch("accounts/profile/", payload);
+
+      dispatch({ type: "profile/save/success", payload: response.data });
+      setName(response.data.name || "Unnamed");
+      localStorage.setItem("name", response.data.name || "Unnamed");
+      toast.success("Profile updated");
+    } catch (error) {
+      dispatch({
+        type: "profile/save/failure",
+        payload:
+          error?.response?.data?.detail ||
+          error?.response?.data?.details ||
+          "Failed to save profile",
+      });
+      toast.error(
+        error?.response?.data?.detail ||
+          error?.response?.data?.details ||
+          "Failed to save profile",
+      );
+    }
+  };
+
   return (
     <div className="h-[100dvh] bg-gray-950 text-white">
       <Navbar />
 
       <main className="mt-16 h-[calc(100dvh-4rem)] overflow-y-auto custom-scrollbar px-4 py-8 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto space-y-6">
+        <div className="mx-auto max-w-4xl space-y-6">
           <section className="rounded-2xl border border-gray-800 bg-gray-900 p-6 md:p-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-              <div className="flex items-center gap-4">
-                <div className="h-16 w-16 rounded-full bg-blue-600/90 flex items-center justify-center">
-                  <UserRound className="h-8 w-8" />
-                </div>
-                <div>
-                  <h1 className="text-2xl md:text-3xl font-bold">
-                    {profile.name}
-                  </h1>
-                  <p className="text-gray-400">
-                    Member since {profile.memberSince}
-                  </p>
-                </div>
-              </div>
+            {state.status === "loading" ? (
+              <p className="text-gray-300">Loading profile...</p>
+            ) : null}
 
-              <div className="inline-flex items-center gap-2 rounded-lg bg-blue-600/20 border border-blue-500/40 px-4 py-2 text-blue-300">
-                <CheckCircle2 className="h-4 w-4" />
-                <span className="text-sm font-semibold">{profile.tier}</span>
+            {state.status === "error" ? (
+              <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-red-300">
+                {state.error}
               </div>
-            </div>
+            ) : null}
 
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="rounded-lg bg-gray-800/70 border border-gray-700 px-4 py-3 flex items-center gap-3">
-                <Mail className="h-4 w-4 text-gray-300" />
-                <span className="text-sm text-gray-200">{profile.email}</span>
-              </div>
-              <div className="rounded-lg bg-gray-800/70 border border-gray-700 px-4 py-3 flex items-center gap-3">
-                <Phone className="h-4 w-4 text-gray-300" />
-                <span className="text-sm text-gray-200">{profile.phone}</span>
-              </div>
-              <div className="rounded-lg bg-gray-800/70 border border-gray-700 px-4 py-3 flex items-center gap-3">
-                <ShieldCheck className="h-4 w-4 text-gray-300" />
-                <span className="text-sm text-gray-200">Account Verified</span>
-              </div>
-            </div>
-          </section>
-
-          <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {stats.map((item) => {
-              const Icon = item.icon;
-              return (
-                <div
-                  key={item.label}
-                  className="rounded-xl border border-gray-800 bg-gray-900 p-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-gray-400">{item.label}</p>
-                    <Icon className="h-4 w-4 text-blue-400" />
-                  </div>
-                  <p className="mt-2 text-2xl font-bold">{item.value}</p>
-                </div>
-              );
-            })}
-          </section>
-
-          <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 rounded-2xl border border-gray-800 bg-gray-900 p-6">
-              <h2 className="text-xl font-semibold">Saved Addresses</h2>
-              <div className="mt-4 grid md:grid-cols-2 gap-4">
-                {addresses.map((address) => (
-                  <div
-                    key={address.type}
-                    className="rounded-xl border border-gray-700 bg-gray-800/60 p-4"
-                  >
-                    <div className="flex items-center justify-between">
-                      <p className="font-semibold">{address.type}</p>
-                      {address.primary && (
-                        <span className="text-xs rounded-full bg-green-500/20 text-green-300 px-2 py-1 border border-green-500/30">
-                          Primary
-                        </span>
+            {state.status === "success" && profile ? (
+              <>
+                <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="h-16 w-16 overflow-hidden rounded-full bg-blue-600/90 flex items-center justify-center">
+                      {showAvatar ? (
+                        <img
+                          src={state.form.profileImg || profile.profileImg}
+                          alt={profile.name || "User avatar"}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <UserRound className="h-8 w-8" />
                       )}
                     </div>
-                    <p className="mt-3 text-sm text-gray-300 flex items-start gap-2">
-                      <MapPin className="h-4 w-4 mt-0.5 text-gray-400" />
-                      <span>
-                        {address.line1}
-                        <br />
-                        {address.line2}
-                      </span>
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-gray-800 bg-gray-900 p-6">
-              <h2 className="text-xl font-semibold">Payment Methods</h2>
-              <div className="mt-4 space-y-3">
-                {payments.map((card) => (
-                  <div
-                    key={card.last4}
-                    className="rounded-xl border border-gray-700 bg-gray-800/60 p-4"
-                  >
-                    <div className="flex items-center justify-between">
-                      <p className="font-semibold">
-                        {card.brand} •••• {card.last4}
+                    <div>
+                      <h1 className="text-2xl font-bold md:text-3xl">
+                        {profile.name || "Unnamed"}
+                      </h1>
+                      <p className="text-gray-400">
+                        Member since {formatMemberSince(profile.dateJoined)}
                       </p>
-                      {card.primary && (
-                        <span className="text-xs rounded-full bg-blue-500/20 text-blue-300 px-2 py-1 border border-blue-500/30">
-                          Default
-                        </span>
-                      )}
                     </div>
-                    <p className="mt-1 text-sm text-gray-400">
-                      Expires {card.expiry}
-                    </p>
                   </div>
-                ))}
-              </div>
-            </div>
-          </section>
 
-          <section className="rounded-2xl border border-gray-800 bg-gray-900 p-6">
-            <h2 className="text-xl font-semibold">Recent Orders</h2>
-            <div className="mt-4 overflow-x-auto">
-              <table className="w-full min-w-[620px] text-left">
-                <thead>
-                  <tr className="text-sm text-gray-400 border-b border-gray-800">
-                    <th className="py-3 font-medium">Order ID</th>
-                    <th className="py-3 font-medium">Date</th>
-                    <th className="py-3 font-medium">Status</th>
-                    <th className="py-3 font-medium">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentOrders.map((order) => (
-                    <tr key={order.id} className="border-b border-gray-800/70">
-                      <td className="py-3 font-medium text-gray-200">
-                        {order.id}
-                      </td>
-                      <td className="py-3 text-gray-300">{order.date}</td>
-                      <td className="py-3">
-                        <span
-                          className={`text-xs px-2.5 py-1 rounded-full border ${
-                            order.status === "Delivered"
-                              ? "bg-green-500/20 text-green-300 border-green-500/30"
-                              : "bg-yellow-500/20 text-yellow-300 border-yellow-500/30"
-                          }`}
-                        >
-                          {order.status}
-                        </span>
-                      </td>
-                      <td className="py-3 text-gray-100">{order.amount}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  <div className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold">
+                    <ShieldCheck className="h-4 w-4" />
+                    <span>{isStaff ? "Staff Account" : "Customer Account"}</span>
+                  </div>
+                </div>
+
+                <div className="mt-6 space-y-4">
+                  <div>
+                    <label className="mb-2 block text-sm text-gray-300">Name</label>
+                    <input
+                      type="text"
+                      value={state.form.name}
+                      disabled={!state.isEditing}
+                      onChange={(e) => onChange("name", e.target.value)}
+                      className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2.5 text-white placeholder-gray-500 disabled:cursor-not-allowed disabled:opacity-70"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm text-gray-300">Email</label>
+                    <div className="relative">
+                      <Mail className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <input
+                        type="email"
+                        value={state.form.email}
+                        disabled={!state.isEditing}
+                        onChange={(e) => onChange("email", e.target.value)}
+                        className="w-full rounded-lg border border-gray-700 bg-gray-800 py-2.5 pl-10 pr-4 text-white placeholder-gray-500 disabled:cursor-not-allowed disabled:opacity-70"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm text-gray-300">
+                      Profile Image URL
+                    </label>
+                    <input
+                      type="url"
+                      value={state.form.profileImg}
+                      disabled={!state.isEditing}
+                      onChange={(e) => onChange("profileImg", e.target.value)}
+                      placeholder="https://example.com/avatar.jpg"
+                      className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2.5 text-white placeholder-gray-500 disabled:cursor-not-allowed disabled:opacity-70"
+                    />
+                  </div>
+                </div>
+
+                {state.saveError ? (
+                  <div className="mt-4 rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300">
+                    {state.saveError}
+                  </div>
+                ) : null}
+
+                <div className="mt-6 flex flex-wrap gap-3">
+                  {!state.isEditing ? (
+                    <button
+                      onClick={() => dispatch({ type: "profile/edit/start" })}
+                      className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition"
+                    >
+                      Edit Profile
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={onSave}
+                        disabled={state.saveStatus === "loading"}
+                        className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60 transition"
+                      >
+                        {state.saveStatus === "loading" ? "Saving..." : "Save"}
+                      </button>
+                      <button
+                        onClick={() => dispatch({ type: "profile/edit/cancel" })}
+                        disabled={state.saveStatus === "loading"}
+                        className="rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-sm font-medium text-gray-200 hover:bg-gray-700 disabled:opacity-60 transition"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  )}
+                </div>
+              </>
+            ) : null}
           </section>
         </div>
       </main>

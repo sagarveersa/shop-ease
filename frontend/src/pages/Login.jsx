@@ -1,10 +1,45 @@
 import axios from "axios";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useReducer } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Navbar } from "../components/Navbar";
 import { authContext } from "../context/AuthContext";
 import { baseURL } from "../service/api";
+
+const initialState = {
+  email: "",
+  password: "",
+  loading: false,
+  error: null,
+  mode: "customer",
+};
+
+function loginReducer(state, action) {
+  switch (action.type) {
+    case "login/form/update":
+      return { ...state, [action.payload.field]: action.payload.value };
+
+    case "login/mode/update":
+      return {
+        ...state,
+        mode: action.payload,
+        error: null,
+        loading: false,
+      };
+
+    case "login/request":
+      return { ...state, loading: true, error: null };
+
+    case "login/success":
+      return { ...state, loading: false, error: null };
+
+    case "login/failure":
+      return { ...state, loading: false, error: action.payload };
+
+    default:
+      return state;
+  }
+}
 
 export default function Login() {
   const {
@@ -18,18 +53,14 @@ export default function Login() {
     authError,
     isAuthLoading,
   } = useContext(authContext);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [state, dispatch] = useReducer(loginReducer, initialState);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (error) {
-      toast.error(error);
-      setError(null);
+    if (state.error) {
+      toast.error(state.error);
     }
-  }, [error]);
+  }, [state.error]);
 
   useEffect(() => {
     if (authError) {
@@ -47,46 +78,57 @@ export default function Login() {
     return <Navigate to="/products" />;
   }
 
+  const persistAuth = ({ accessToken, refreshToken, userID, name, isStaff }) => {
+    setToken(accessToken);
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
+
+    setUserID(userID);
+    localStorage.setItem("userID", userID);
+
+    setName(name);
+    localStorage.setItem("name", name);
+
+    setIsStaff(isStaff);
+    localStorage.setItem("isStaff", String(isStaff));
+  };
+
   const handleLocalAuth = async () => {
-    setLoading(true);
+    dispatch({ type: "login/request" });
 
     try {
-      const response = await axios.post(`${baseURL}accounts/login/`, {
-        email: email,
-        password: password,
+      const endpoint =
+        useAuth0 && state.mode === "staff"
+          ? "accounts/staff/login/"
+          : "accounts/login/";
+      const response = await axios.post(`${baseURL}${endpoint}`, {
+        email: state.email,
+        password: state.password,
       });
 
       const accessToken = response.data.access;
       const refreshToken = response.data.refresh;
-
       const userID = response.data.userID;
       const name = response.data.name ? response.data.name : "Unnamed";
       const isStaff = response.data.isStaff;
+
       if (!accessToken || !refreshToken || !userID || !name) {
-        setError("Server Error");
+        dispatch({ type: "login/failure", payload: "Server error" });
         return;
       }
 
-      setToken(accessToken);
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
-
-      setUserID(userID);
-      localStorage.setItem("userID", userID);
-
-      setName(name);
-      localStorage.setItem("name", name);
-
-      setIsStaff(isStaff);
-      localStorage.setItem("isStaff", isStaff);
-
-      setError(null);
+      persistAuth({ accessToken, refreshToken, userID, name, isStaff });
+      dispatch({ type: "login/success" });
       navigate("/");
     } catch (error) {
-      setError(error?.response?.data?.detail || "Login failed");
-      console.log(error);
-    } finally {
-      setLoading(false);
+      dispatch({
+        type: "login/failure",
+        payload:
+          error?.response?.data?.detail ||
+          error?.response?.data?.details ||
+          error?.response?.data?.nonFieldErrors?.[0] ||
+          "Login failed",
+      });
     }
   };
 
@@ -98,6 +140,8 @@ export default function Login() {
       },
     });
   };
+
+  const showLocalForm = !useAuth0 || state.mode === "staff";
 
   return (
     <div className="bg-gray-950 min-h-screen">
@@ -113,8 +157,43 @@ export default function Login() {
               </p>
             </div>
 
-            {!useAuth0 ? (
+            {useAuth0 ? (
+              <div className="mb-5 rounded-lg border border-gray-700 p-1 grid grid-cols-2 gap-1">
+                <button
+                  onClick={() =>
+                    dispatch({ type: "login/mode/update", payload: "customer" })
+                  }
+                  className={`rounded-md py-2 text-sm font-medium transition ${
+                    state.mode === "customer"
+                      ? "bg-blue-600 text-white"
+                      : "text-gray-300 hover:bg-gray-800"
+                  }`}
+                >
+                  Customer
+                </button>
+                <button
+                  onClick={() =>
+                    dispatch({ type: "login/mode/update", payload: "staff" })
+                  }
+                  className={`rounded-md py-2 text-sm font-medium transition ${
+                    state.mode === "staff"
+                      ? "bg-emerald-600 text-white"
+                      : "text-gray-300 hover:bg-gray-800"
+                  }`}
+                >
+                  Staff
+                </button>
+              </div>
+            ) : null}
+
+            {showLocalForm ? (
               <div className="space-y-5">
+                {useAuth0 && state.mode === "staff" ? (
+                  <p className="text-xs text-gray-400">
+                    Staff accounts can log in directly without Auth0 registration.
+                  </p>
+                ) : null}
+
                 <div>
                   <label
                     htmlFor="email"
@@ -127,8 +206,13 @@ export default function Login() {
                     id="email"
                     name="email"
                     placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={state.email}
+                    onChange={(e) =>
+                      dispatch({
+                        type: "login/form/update",
+                        payload: { field: "email", value: e.target.value },
+                      })
+                    }
                     className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                   />
                 </div>
@@ -145,24 +229,26 @@ export default function Login() {
                     id="password"
                     name="password"
                     placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={state.password}
+                    onChange={(e) =>
+                      dispatch({
+                        type: "login/form/update",
+                        payload: { field: "password", value: e.target.value },
+                      })
+                    }
                     className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                   />
                 </div>
 
-                {!loading && (
+                {!state.loading ? (
                   <button
                     type="submit"
-                    onClick={() => {
-                      handleLocalAuth();
-                    }}
+                    onClick={handleLocalAuth}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
                   >
                     Login
                   </button>
-                )}
-                {loading && (
+                ) : (
                   <button className="flex flex-row justify-center w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]">
                     <div className="w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"></div>
                   </button>

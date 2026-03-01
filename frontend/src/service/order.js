@@ -24,10 +24,10 @@ export const OrderService = {
     } catch (error) {
       console.log(`[Service] ${error}`);
       if (error.name === "CanceledError") {
-        return { status: "aborted", data: {} };
+        return { status: "aborted", data: { orders: [] } };
       }
 
-      return { status: "error", data: {} };
+      return { status: "error", data: { orders: [] } };
     }
   },
 

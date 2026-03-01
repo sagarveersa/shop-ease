@@ -58,16 +58,8 @@ export function Navbar() {
 
               {/* User Section */}
               {loggedIn ? (
-                <div className="flex items-center gap-3">
-                  {/* Avatar Button */}
-                  <button className="flex items-center gap-2 px-3 py-2 rounded-full bg-gray-800 hover:bg-gray-700 transition">
-                    <div className="relative">
-                      <div className="h-8 w-16 rounded-full bg-blue-600 flex items-center justify-center">
-                        {/* <User className="h-4 w-4 text-white" /> */}
-                        <UserDropdown />
-                      </div>
-                    </div>
-                  </button>
+                <div className="ml-2 flex items-center">
+                  <UserDropdown />
                 </div>
               ) : (
                 <Link to="/login">
