@@ -1,14 +1,14 @@
-import { useNavigate, useParams } from "react-router-dom";
-import SearchBar from "../components/SearchBar";
 import { useContext, useEffect, useState } from "react";
-import { ProductService } from "../service/product";
-import { cartContext } from "../context/CartContext";
-import { authContext } from "../context/AuthContext";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { Navbar } from "../components/Navbar";
+import SearchBar from "../components/SearchBar";
+import { authContext } from "../context/AuthContext";
+import { cartContext } from "../context/CartContext";
 import { checkoutContext } from "../context/CheckoutContext";
-import { toast } from "react-toastify";
-import mixpanel from "mixpanel-browser";
+import { ProductService } from "../service/product";
+import { trackEvent } from "../utils/analytics";
 
 export default function Product() {
   const { cart, addToCart } = useContext(cartContext);
@@ -43,7 +43,7 @@ export default function Product() {
         setError(null);
 
         console.log("tracking view product");
-        mixpanel.track("View Product", {
+        trackEvent("View Product", {
           product_id: response.data.id,
           product_name: response.data.name,
           price: response.data.price,
@@ -55,7 +55,7 @@ export default function Product() {
   }, [id]);
 
   useEffect(() => {
-    if (!error) {
+    if (error) {
       toast.error(error);
     }
   }, [error]);

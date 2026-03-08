@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect } from "react";
 import { CartService } from "../service/cart";
 import { authContext } from "./AuthContext";
 import { useState } from "react";
-import mixpanel from "mixpanel-browser";
+import { trackEvent } from "../utils/analytics";
 
 export const cartContext = createContext();
 
@@ -57,7 +57,7 @@ export function CartProvider({ children }) {
 
   const addToCart = (product) => {
     console.log("tracking add to cart");
-    mixpanel.track("Add to Cart", {
+    trackEvent("Add to Cart", {
       product_id: product.id,
       product_name: product.name,
       price: product.price,

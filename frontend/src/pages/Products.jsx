@@ -7,7 +7,6 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import { cartContext } from "../context/CartContext";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import mixpanel from "mixpanel-browser";
 
 export function Products() {
   const [products, setProducts] = useState([]);
