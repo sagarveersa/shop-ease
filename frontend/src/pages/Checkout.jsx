@@ -5,6 +5,7 @@ import CheckoutOverlay from "../components/CheckoutOverlay";
 import { Navbar } from "../components/Navbar";
 import { checkoutContext } from "../context/CheckoutContext";
 import { OrderService } from "../service/order";
+import mixpanel from "mixpanel-browser";
 
 const initialState = {
   form: {
@@ -30,6 +31,8 @@ function reducer(state, action) {
     }
 
     case "checkout/placeOrder": {
+      console.log("tracking place order");
+      mixpanel.track("Place Order Attempt", {});
       return {
         ...state,
         status: "loading",
@@ -77,6 +80,19 @@ export default function Checkout() {
 
   const tax = 0;
   const total = subtotal + tax;
+
+  useEffect(() => {
+    mixpanel.track("View Checkout", {
+      total_items: checkoutItems.length,
+      total_price: total,
+      products: checkoutItems.map((item) => ({
+        product_id: item.product.id,
+        product_name: item.product.name,
+        price: item.product.price,
+        quantity: item.qty,
+      })),
+    });
+  });
 
   useEffect(() => {
     if (state.status === "error") {

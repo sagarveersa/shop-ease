@@ -25,13 +25,13 @@ const initialState = {
 
 function reducer(state, action) {
   switch (action.type) {
-    case "SOCKET_OPENED":
+    case "staff/socket/connected":
       return {
         ...state,
         connectionStatus: "connected",
         logItems: [...state.logItems, "WebSocket connected"],
       };
-    case "SOCKET_FAILED":
+    case "staff/socket/failed":
       return {
         ...state,
         connectionStatus: "error",
@@ -39,31 +39,31 @@ function reducer(state, action) {
         registrationMessage: action.payload || "Failed to register staff",
         logItems: [...state.logItems, action.payload || "Socket error"],
       };
-    case "SOCKET_CLOSED":
+    case "staff/socket/closed":
       return {
         ...state,
         connectionStatus: "closed",
         logItems: [...state.logItems, "WebSocket disconnected"],
       };
-    case "STAFF_ID_RESOLVED":
+    case "staff/id/resolved":
       return {
         ...state,
         staffId: action.payload || "staff",
       };
-    case "STAFF_REGISTERED":
+    case "staff/register/success":
       return {
         ...state,
         registrationStatus: "success",
         registrationMessage: action.payload || "Staff registered",
         logItems: [...state.logItems, action.payload || "Staff registered"],
       };
-    case "STAFF_REGISTRATION_PENDING":
+    case "staff/register/pending":
       return {
         ...state,
         registrationStatus: "pending",
         registrationMessage: action.payload || "Registering staff...",
       };
-    case "STAFF_UNREGISTERED":
+    case "staff/unregister/success":
       return {
         ...state,
         registrationStatus: "pending",
@@ -74,7 +74,7 @@ function reducer(state, action) {
         composerText: "",
         logItems: [...state.logItems, action.payload || "Staff unregistered"],
       };
-    case "STAFF_REGISTRATION_FAILED":
+    case "staff/register/failed":
       return {
         ...state,
         registrationStatus: "failed",
@@ -84,7 +84,7 @@ function reducer(state, action) {
           action.payload || "Staff registration failed",
         ],
       };
-    case "ROOM_ASSIGNED": {
+    case "room/assign/success": {
       const { roomId, guestId } = action.payload;
       const existingRoom = state.rooms[roomId];
       const nextRoom = {
@@ -107,7 +107,7 @@ function reducer(state, action) {
         logItems: [...state.logItems, `Room assigned: ${roomId}`],
       };
     }
-    case "ROOM_CLOSED": {
+    case "room/close/success": {
       const roomId = action.payload;
       const room = state.rooms[roomId];
       if (!room) return state;
@@ -124,7 +124,7 @@ function reducer(state, action) {
         logItems: [...state.logItems, `Room closed: ${roomId}`],
       };
     }
-    case "GUEST_LEFT_ROOM": {
+    case "room/guest-left/success": {
       const { roomId, guestId } = action.payload;
       const room = state.rooms[roomId];
       if (!room) return state;
@@ -144,7 +144,7 @@ function reducer(state, action) {
         ],
       };
     }
-    case "ROOM_MESSAGE_RECEIVED": {
+    case "room/message/received": {
       const { roomId, senderId, content } = action.payload;
       if (!roomId || !content) return state;
       const room = state.rooms[roomId] || {
@@ -176,7 +176,7 @@ function reducer(state, action) {
         activeRoomId: state.activeRoomId || roomId,
       };
     }
-    case "ROOM_TYPING_TOGGLED": {
+    case "room/typing/toggled": {
       const roomId = action.payload;
       const room = state.rooms[roomId];
       if (!room) return state;
@@ -191,17 +191,17 @@ function reducer(state, action) {
         },
       };
     }
-    case "COMPOSER_UPDATED":
+    case "composer/update/success":
       return {
         ...state,
         composerText: action.payload,
       };
-    case "ACTIVE_ROOM_CHANGED":
+    case "room/activate/success":
       return {
         ...state,
         activeRoomId: action.payload,
       };
-    case "COMPOSER_RESET":
+    case "composer/reset/success":
       return {
         ...state,
         composerText: "",
@@ -311,14 +311,14 @@ export default function Staff() {
     const token = localStorage.getItem("accessToken");
     if (!token) {
       dispatch({
-        type: "STAFF_REGISTRATION_FAILED",
+        type: "staff/register/failed",
         payload: "Failed to register staff",
       });
       return;
     }
 
     dispatch({
-      type: "STAFF_REGISTRATION_PENDING",
+      type: "staff/register/pending",
       payload: "Registering staff...",
     });
 
@@ -352,7 +352,7 @@ export default function Staff() {
     );
 
     dispatch({
-      type: "STAFF_UNREGISTERED",
+      type: "staff/unregister/success",
       payload: "Staff unregistered",
     });
   };
@@ -360,24 +360,24 @@ export default function Staff() {
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     const staffId = getStaffIdFromToken(token);
-    dispatch({ type: "STAFF_ID_RESOLVED", payload: staffId });
+    dispatch({ type: "staff/id/resolved", payload: staffId });
 
     const ws = new WebSocket(WS_ENDPOINT);
     socketRef.current = ws;
 
     ws.onopen = () => {
-      dispatch({ type: "SOCKET_OPENED" });
+      dispatch({ type: "staff/socket/connected" });
 
       if (!token) {
         dispatch({
-          type: "STAFF_REGISTRATION_FAILED",
+          type: "staff/register/failed",
           payload: "Failed to register staff",
         });
         return;
       }
 
       dispatch({
-        type: "STAFF_REGISTRATION_PENDING",
+        type: "staff/register/pending",
         payload: "Registering staff...",
       });
       ws.send(
@@ -396,7 +396,7 @@ export default function Staff() {
 
       if (payload.type === "Success") {
         dispatch({
-          type: "STAFF_REGISTERED",
+          type: "staff/register/success",
           payload: payload?.data?.details || "Staff registered",
         });
         return;
@@ -404,7 +404,7 @@ export default function Staff() {
 
       if (payload.type === "Error") {
         dispatch({
-          type: "STAFF_REGISTRATION_FAILED",
+          type: "staff/register/failed",
           payload: payload?.data?.details || "Failed to register staff",
         });
         return;
@@ -412,7 +412,7 @@ export default function Staff() {
 
       if (payload.type === "RoomAssigned") {
         dispatch({
-          type: "ROOM_ASSIGNED",
+          type: "room/assign/success",
           payload: {
             roomId: payload?.data?.room_id,
             guestId: payload?.data?.guest_id,
@@ -423,7 +423,7 @@ export default function Staff() {
 
       if (payload.type === "RoomClosed") {
         dispatch({
-          type: "ROOM_CLOSED",
+          type: "room/close/success",
           payload: payload?.data?.room_id,
         });
         return;
@@ -431,7 +431,7 @@ export default function Staff() {
 
       if (payload.type === "RoomMessage") {
         dispatch({
-          type: "ROOM_MESSAGE_RECEIVED",
+          type: "room/message/received",
           payload: {
             roomId: payload?.data?.room_id,
             senderId: payload?.data?.sender_id,
@@ -448,13 +448,13 @@ export default function Staff() {
           localTypingToggleEchoByRoomRef.current[roomId] -= 1;
           return;
         }
-        dispatch({ type: "ROOM_TYPING_TOGGLED", payload: roomId });
+        dispatch({ type: "room/typing/toggled", payload: roomId });
         return;
       }
 
       if (payload.type === "GuestLeftRoom") {
         dispatch({
-          type: "GUEST_LEFT_ROOM",
+          type: "room/guest-left/success",
           payload: {
             roomId: payload?.data?.room_id,
             guestId: payload?.data?.guest_id,
@@ -465,13 +465,13 @@ export default function Staff() {
 
     ws.onerror = () => {
       dispatch({
-        type: "SOCKET_FAILED",
+        type: "staff/socket/failed",
         payload: "Failed to register staff",
       });
     };
 
     ws.onclose = () => {
-      dispatch({ type: "SOCKET_CLOSED" });
+      dispatch({ type: "staff/socket/closed" });
     };
 
     return () => {
@@ -499,12 +499,12 @@ export default function Staff() {
     );
     stopTypingForRoom(activeRoom.roomId);
     clearTimeout(typingTimeoutRef.current);
-    dispatch({ type: "COMPOSER_RESET" });
+    dispatch({ type: "composer/reset/success" });
   };
 
   const handleComposerChange = (nextValue) => {
     dispatch({
-      type: "COMPOSER_UPDATED",
+      type: "composer/update/success",
       payload: nextValue,
     });
 
@@ -621,7 +621,7 @@ export default function Staff() {
                         type="button"
                         onClick={() =>
                           dispatch({
-                            type: "ACTIVE_ROOM_CHANGED",
+                            type: "room/activate/success",
                             payload: roomId,
                           })
                         }

@@ -10,9 +10,14 @@ def send_order_confirmation_email(self, order_id):
 
     subject = "Order Confirmed 🎉"
     message = f"""
-Hi {order.user.username},
+Hi {order.user.get_full_name() or order.user.email},
 
-Your order #{order.id} has been placed successfully.
+Your order of {order.total_amount} has been confirmed! 
+
+Here are the details of your order:
+- Order ID: {order.id}
+- Total Amount: {order.total_amount}
+- Products: {', '.join(item.product.name for item in order.items.all())}
 
 Thank you for shopping with us!
 """

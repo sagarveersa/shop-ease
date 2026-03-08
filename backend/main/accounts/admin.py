@@ -1,27 +1,51 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, Profile
+
+from .models import User
+
 
 class CustomUserAdmin(UserAdmin):
     model = User
 
-    list_display = ("email", "is_staff", "is_superuser")
+    list_display = ("email", "auth0_id", "is_staff", "is_superuser")
     ordering = ("email",)
-    search_fields = ("email",)
+    search_fields = ("email", "auth0_id")
 
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        ("Personal Info", {"fields": ("first_name", "last_name")}),
-        ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")}),
+        ("Personal Info", {"fields": ("first_name", "last_name", "auth0_picture")}),
+        (
+            "Permissions",
+            {
+                "fields": (
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "groups",
+                    "user_permissions",
+                )
+            },
+        ),
         ("Important dates", {"fields": ("last_login", "date_joined")}),
     )
 
     add_fieldsets = (
-        (None, {
-            "classes": ("wide",),
-            "fields": ("email", "first_name", "last_name", "password1", "password2", "is_staff", "is_superuser"),
-        }),
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "email",
+                    "first_name",
+                    "last_name",
+                    "password1",
+                    "password2",
+                    "is_staff",
+                    "is_superuser",
+                ),
+            },
+        ),
     )
 
+
 admin.site.register(User, CustomUserAdmin)
-admin.site.register(Profile)

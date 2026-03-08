@@ -8,6 +8,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import { Navbar } from "../components/Navbar";
 import { checkoutContext } from "../context/CheckoutContext";
 import { toast } from "react-toastify";
+import mixpanel from "mixpanel-browser";
 
 export default function Product() {
   const { cart, addToCart } = useContext(cartContext);
@@ -40,6 +41,13 @@ export default function Product() {
         console.log("Product", response.data);
         setProduct(response.data);
         setError(null);
+
+        console.log("tracking view product");
+        mixpanel.track("View Product", {
+          product_id: response.data.id,
+          product_name: response.data.name,
+          price: response.data.price,
+        });
       }
     };
 

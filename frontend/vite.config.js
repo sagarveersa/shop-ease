@@ -5,4 +5,14 @@ import tailwindcss from "@tailwindcss/vite";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  server: {
+    proxy: {
+      "/mixpanel": {
+        target: "https://api-js.mixpanel.com",
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/mixpanel/, ""),
+      },
+    },
+  },
 });

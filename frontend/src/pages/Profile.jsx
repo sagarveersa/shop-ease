@@ -1,5 +1,5 @@
 import { Mail, ShieldCheck, UserRound } from "lucide-react";
-import { useContext, useEffect, useReducer } from "react";
+import { useContext, useEffect, useReducer, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Navbar } from "../components/Navbar";
@@ -16,7 +16,6 @@ const initialState = {
   form: {
     name: "",
     email: "",
-    profileImg: "",
   },
 };
 
@@ -34,7 +33,6 @@ function profileReducer(state, action) {
         form: {
           name: action.payload.name || "",
           email: action.payload.email || "",
-          profileImg: action.payload.profileImg || "",
         },
       };
 
@@ -52,7 +50,6 @@ function profileReducer(state, action) {
         form: {
           name: state.profile?.name || "",
           email: state.profile?.email || "",
-          profileImg: state.profile?.profileImg || "",
         },
       };
 
@@ -78,7 +75,6 @@ function profileReducer(state, action) {
         form: {
           name: action.payload.name || "",
           email: action.payload.email || "",
-          profileImg: action.payload.profileImg || "",
         },
       };
 
@@ -109,6 +105,7 @@ function formatMemberSince(dateString) {
 export default function Profile() {
   const { loggedIn, isStaff, setName } = useContext(authContext);
   const [state, dispatch] = useReducer(profileReducer, initialState);
+  const [avatarLoadError, setAvatarLoadError] = useState(false);
 
   useEffect(() => {
     if (!loggedIn) return;
@@ -139,12 +136,18 @@ export default function Profile() {
     return () => controller.abort();
   }, [loggedIn]);
 
+  useEffect(() => {
+    setAvatarLoadError(false);
+  }, [state.profile?.profileImg]);
+
   if (!loggedIn) {
     return <Navigate to="/login" replace />;
   }
 
   const profile = state.profile;
-  const showAvatar = Boolean(state.form.profileImg || profile?.profileImg);
+  const isAuth0Account = Boolean(profile?.auth0Id);
+  const avatarSrc = profile?.profileImg || "";
+  const showAvatar = Boolean(avatarSrc) && !avatarLoadError;
 
   const onChange = (field, value) => {
     dispatch({
@@ -154,13 +157,16 @@ export default function Profile() {
   };
 
   const onSave = async () => {
+    if (isAuth0Account) {
+      toast.info("Name is managed by Auth0 for this account.");
+      return;
+    }
+
     dispatch({ type: "profile/save/request" });
 
     try {
       const payload = {
         name: state.form.name.trim(),
-        email: state.form.email.trim(),
-        profileImg: state.form.profileImg.trim(),
       };
       const response = await api.patch("accounts/profile/", payload);
 
@@ -208,9 +214,10 @@ export default function Profile() {
                     <div className="h-16 w-16 overflow-hidden rounded-full bg-blue-600/90 flex items-center justify-center">
                       {showAvatar ? (
                         <img
-                          src={state.form.profileImg || profile.profileImg}
+                          src={avatarSrc}
                           alt={profile.name || "User avatar"}
                           className="h-full w-full object-cover"
+                          onError={() => setAvatarLoadError(true)}
                         />
                       ) : (
                         <UserRound className="h-8 w-8" />
@@ -238,10 +245,15 @@ export default function Profile() {
                     <input
                       type="text"
                       value={state.form.name}
-                      disabled={!state.isEditing}
+                      disabled={!state.isEditing || isAuth0Account}
                       onChange={(e) => onChange("name", e.target.value)}
                       className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2.5 text-white placeholder-gray-500 disabled:cursor-not-allowed disabled:opacity-70"
                     />
+                    {isAuth0Account ? (
+                      <p className="mt-2 text-xs text-gray-400">
+                        Name is managed by Auth0.
+                      </p>
+                    ) : null}
                   </div>
 
                   <div>
@@ -251,25 +263,11 @@ export default function Profile() {
                       <input
                         type="email"
                         value={state.form.email}
-                        disabled={!state.isEditing}
-                        onChange={(e) => onChange("email", e.target.value)}
+                        disabled
+                        readOnly
                         className="w-full rounded-lg border border-gray-700 bg-gray-800 py-2.5 pl-10 pr-4 text-white placeholder-gray-500 disabled:cursor-not-allowed disabled:opacity-70"
                       />
                     </div>
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-sm text-gray-300">
-                      Profile Image URL
-                    </label>
-                    <input
-                      type="url"
-                      value={state.form.profileImg}
-                      disabled={!state.isEditing}
-                      onChange={(e) => onChange("profileImg", e.target.value)}
-                      placeholder="https://example.com/avatar.jpg"
-                      className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2.5 text-white placeholder-gray-500 disabled:cursor-not-allowed disabled:opacity-70"
-                    />
                   </div>
                 </div>
 
@@ -280,14 +278,14 @@ export default function Profile() {
                 ) : null}
 
                 <div className="mt-6 flex flex-wrap gap-3">
-                  {!state.isEditing ? (
+                  {!state.isEditing && !isAuth0Account ? (
                     <button
                       onClick={() => dispatch({ type: "profile/edit/start" })}
                       className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition"
                     >
                       Edit Profile
                     </button>
-                  ) : (
+                  ) : !isAuth0Account ? (
                     <>
                       <button
                         onClick={onSave}
@@ -304,7 +302,7 @@ export default function Profile() {
                         Cancel
                       </button>
                     </>
-                  )}
+                  ) : null}
                 </div>
               </>
             ) : null}
