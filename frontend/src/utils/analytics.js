@@ -1,35 +1,64 @@
-import mixpanel from "mixpanel-browser";
+import { baseApi } from "../service/api";
 
+const ANON_ID_KEY = "analyticsAnonymousId";
 let analyticsEnabled = false;
 
-export function initAnalytics() {
-  const token = import.meta.env.VITE_MIXPANEL_PROJECT_TOKEN;
-  const hasValidToken = typeof token === "string" && token.trim().length > 0;
-
-  if (!hasValidToken) {
-    analyticsEnabled = false;
-    console.warn("Mixpanel is disabled: missing VITE_MIXPANEL_PROJECT_TOKEN");
-    return;
+function generateAnonymousId() {
+  if (window.crypto?.randomUUID) {
+    return window.crypto.randomUUID();
   }
+  return `anon_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+}
 
-  mixpanel.init(token, {
-    track_pageview: true,
-    autocapture: true,
-    record_sessions_percent: 100,
-    record_heatmap_data: true,
-    api_host: import.meta.env.DEV ? "/mixpanel" : "https://api-js.mixpanel.com",
-  });
+function getAnonymousId() {
+  let anonymousId = localStorage.getItem(ANON_ID_KEY);
+  if (!anonymousId) {
+    anonymousId = generateAnonymousId();
+    localStorage.setItem(ANON_ID_KEY, anonymousId);
+  }
+  return anonymousId;
+}
 
+function getAuthHeaders() {
+  const token = localStorage.getItem("accessToken");
+  if (!token) return {};
+  return { Authorization: `Bearer ${token}` };
+}
+
+export function initAnalytics() {
+  getAnonymousId();
   analyticsEnabled = true;
   trackEvent("App Loaded");
 }
 
-export function trackEvent(name, properties = {}) {
+export async function identifyAuthenticatedUser() {
   if (!analyticsEnabled) return;
 
   try {
-    mixpanel.track(name, properties);
+    await baseApi.post(
+      "analytics/identify/",
+      { anonymousId: getAnonymousId() },
+      { headers: getAuthHeaders() },
+    );
   } catch (error) {
-    console.warn(`Mixpanel track failed for ${name}`, error);
+    console.warn("Analytics identify failed", error);
+  }
+}
+
+export async function trackEvent(name, properties = {}) {
+  if (!analyticsEnabled) return;
+
+  try {
+    await baseApi.post(
+      "analytics/track/",
+      {
+        event: name,
+        anonymousId: getAnonymousId(),
+        properties,
+      },
+      { headers: getAuthHeaders() },
+    );
+  } catch (error) {
+    console.warn(`Analytics track failed for ${name}`, error);
   }
 }

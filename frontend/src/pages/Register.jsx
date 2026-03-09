@@ -56,7 +56,7 @@ export default function Register() {
   };
 
   return (
-    <div className="bg-gray-950 min-h-screen">
+    <div className="bg-gray-950 h-full overflow-y-auto">
       <Navbar />
 
       <div className="mt-16 flex items-center justify-center p-4 pt-12">

@@ -62,7 +62,8 @@ INSTALLED_APPS = [
     'products',
     'cart',
     'orders',
-    'location'
+    'location',
+    'analytics'
 ]
 
 MIDDLEWARE = [
@@ -218,3 +219,9 @@ AUTH0_FRONTEND_FAILURE_URL = os.environ.get(
 )
 AUTH0_SCOPE = os.environ.get("AUTH0_SCOPE", "openid profile email")
 API_AUDIENCE = os.environ.get("API_AUDIENCE", "https://my-api.example.com")
+
+MIXPANEL_PROJECT_TOKEN = os.environ.get("MIXPANEL_PROJECT_TOKEN", "")
+MIXPANEL_TRACK_URL = os.environ.get(
+    "MIXPANEL_TRACK_URL",
+    "https://api.mixpanel.com/track",
+)

@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { Navbar } from "../components/Navbar";
 import { authContext } from "../context/AuthContext";
 import { baseURL } from "../service/api";
+import { identifyAuthenticatedUser, trackEvent } from "../utils/analytics";
 
 const initialState = {
   email: "",
@@ -118,6 +119,12 @@ export default function Login() {
       }
 
       persistAuth({ accessToken, refreshToken, userID, name, isStaff });
+      identifyAuthenticatedUser();
+      trackEvent("User Signed In", {
+        login_method: "password",
+        user_id: userID,
+        is_staff: isStaff,
+      });
       dispatch({ type: "login/success" });
       navigate("/");
     } catch (error) {
@@ -144,7 +151,7 @@ export default function Login() {
   const showAuth0Button = useAuth0 && state.mode === "customer";
 
   return (
-    <div className="bg-gray-950 min-h-screen">
+    <div className="bg-gray-950 h-full overflow-y-auto">
       <Navbar />
 
       <div className="mt-16 flex items-center justify-center p-4 pt-12">

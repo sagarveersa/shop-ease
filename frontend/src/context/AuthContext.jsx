@@ -1,6 +1,7 @@
 import { createContext } from "react";
 import { useCallback, useEffect, useState } from "react";
 import { setupApiAuth } from "../service/api";
+import { identifyAuthenticatedUser, trackEvent } from "../utils/analytics";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const authContext = createContext();
@@ -112,11 +113,19 @@ export function AuthProvider({ children, useAuth0Integration = false }) {
     setName(payload.name);
     setIsStaff(payload.isStaff);
     setAuthError(null);
+
+    identifyAuthenticatedUser();
+    trackEvent("User Signed In", {
+      login_method: "auth0",
+      user_id: payload.userID,
+      is_staff: payload.isStaff,
+    });
   }, []);
 
   const loggedIn = !!(token && userID && name);
 
   const logout = useCallback(() => {
+    trackEvent("User Signed Out");
     clearAuthStorage();
     setToken(null);
     setUserID(null);

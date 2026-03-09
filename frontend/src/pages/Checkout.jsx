@@ -92,7 +92,7 @@ export default function Checkout() {
         quantity: item.qty,
       })),
     });
-  });
+  }, [checkoutItems, total]);
 
   useEffect(() => {
     if (state.status === "error") {
@@ -145,6 +145,9 @@ export default function Checkout() {
       }
 
       case "error": {
+        trackEvent("Order Placement Failed", {
+          items_count: checkoutItems.length,
+        });
         dispatch({ type: "checkout/error", error: "Error placing order" });
         break;
       }

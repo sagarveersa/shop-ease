@@ -112,6 +112,11 @@ export function CartProvider({ children }) {
   };
 
   const removeFromCart = (product) => {
+    trackEvent("Remove from Cart", {
+      product_id: product.id,
+      product_name: product.name,
+      price: product.price,
+    });
     const asyncRemoveFromCart = async () => {
       // update the state
       const prevQty = cart[product.id].qty;

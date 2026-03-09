@@ -2,6 +2,7 @@ import { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { cartContext } from "../context/CartContext";
 import { checkoutContext } from "../context/CheckoutContext";
+import { trackEvent } from "../utils/analytics";
 
 export default function CartSummary() {
   const { cart, totalItems, totalPrice } = useContext(cartContext);
@@ -14,6 +15,16 @@ export default function CartSummary() {
     for (const [productId, value] of Object.entries(cart)) {
       productsList.push({ product: value.product, qty: value.qty });
     }
+    trackEvent("Begin Checkout", {
+      total_items: totalItems,
+      total_price: totalPrice,
+      items: productsList.map((item) => ({
+        product_id: item.product.id,
+        product_name: item.product.name,
+        price: item.product.price,
+        quantity: item.qty,
+      })),
+    });
     setCheckoutItems(productsList);
     navigate("/checkout");
   };

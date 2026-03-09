@@ -9,7 +9,8 @@ import { useCallback, useEffect, useReducer, useRef } from "react";
 import { Navbar } from "../components/Navbar";
 
 const WS_ENDPOINT =
-  import.meta.VITE_CHAT_API_URL || "ws://localhost:8004/api/ws/";
+  import.meta.env.VITE_CHAT_API_URL ||
+  `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}/api/ws/`;
 
 const initialState = {
   connectionStatus: "connecting",

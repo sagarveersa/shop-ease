@@ -3,7 +3,7 @@ import camelcaseKeys from "camelcase-keys";
 import snakecaseKeys from "snakecase-keys";
 
 export const baseURL =
-  import.meta.env.VITE_API_URL || "http://localhost:8000/api/";
+  import.meta.env.VITE_API_URL || "/api/";
 
 export const baseApi = axios.create({
   baseURL: baseURL,

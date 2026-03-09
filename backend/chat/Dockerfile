@@ -12,4 +12,4 @@ COPY . /app
 
 EXPOSE 8004
 
-CMD ["sh", "-c", "python scripts/wait_for_services.py && uvicorn main:app --host 0.0.0.0 --port 8004"]
+CMD ["sh", "-c", "python scripts/wait_for_services.py && uvicorn main:app --host 0.0.0.0 --port 8004 --proxy-headers"]

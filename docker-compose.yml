@@ -2,12 +2,11 @@ services:
   db:
     image: postgres:16-alpine
     container_name: shop_ease_db
+    restart: unless-stopped
     environment:
       POSTGRES_DB: shop_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -19,8 +18,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: shop_ease_redis
-    ports:
-      - "6379:6379"
+    restart: unless-stopped
     volumes:
       - redis_data:/data
     healthcheck:
@@ -34,9 +32,11 @@ services:
       context: ./backend/main
       dockerfile: Dockerfile
     container_name: shop_ease_django
+    restart: unless-stopped
     env_file:
       - ./backend/main/.env
     environment:
+      DEBUG: "0"
       DB_HOST: db
       DB_PORT: "5432"
       DB_POST: "5432"
@@ -49,8 +49,6 @@ services:
       CELERY_RESULT_BACKEND: redis://redis:6379/1
       WAIT_FOR_DB: "true"
       WAIT_FOR_REDIS: "true"
-    ports:
-      - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -62,9 +60,11 @@ services:
       context: ./backend/main
       dockerfile: Dockerfile
     container_name: shop_ease_worker
+    restart: unless-stopped
     env_file:
       - ./backend/main/.env
     environment:
+      DEBUG: "0"
       DB_HOST: db
       DB_PORT: "5432"
       DB_POST: "5432"
@@ -91,6 +91,7 @@ services:
       context: ./backend/chat
       dockerfile: Dockerfile
     container_name: shop_ease_chat
+    restart: unless-stopped
     env_file:
       - ./backend/chat/.env
     environment:
@@ -103,39 +104,37 @@ services:
       REDIS_PORT: "6379"
       WAIT_FOR_DB: "true"
       WAIT_FOR_REDIS: "true"
-    ports:
-      - "8004:8004"
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
 
-  nginx:
-    build:
-      context: ./backend/gateway
-      dockerfile: Dockerfile
-    container_name: shop_ease_nginx
-    ports:
-      - "8080:80"
-    depends_on:
-      - django
-      - chat
-
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-/api/}
+        VITE_CHAT_API_URL: ${VITE_CHAT_API_URL:-}
     container_name: shop_ease_frontend
-    env_file:
-      - ./frontend/.env
-    environment:
-      VITE_API_URL: http://localhost:8080/api/
-      VITE_CHAT_API_URL: ws://localhost:8080/api/ws/
-    ports:
-      - "5173:5173"
+    restart: unless-stopped
     depends_on:
-      - nginx
+      - django
+      - chat
+
+  gateway:
+    build:
+      context: ./backend/gateway
+      dockerfile: Dockerfile
+    container_name: shop_ease_gateway
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - django
+      - frontend
+      - chat
 
 volumes:
   postgres_data:

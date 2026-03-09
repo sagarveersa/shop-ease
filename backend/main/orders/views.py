@@ -8,6 +8,7 @@ from .models import Order
 from .tasks import send_order_confirmation_email
 from django.core.mail import send_mail
 from django.http import HttpResponse
+from analytics.mixpanel import track_event
 
 # Create your views here.
 class OrderViewSet(ModelViewSet):
@@ -38,6 +39,17 @@ class OrderViewSet(ModelViewSet):
             send_order_confirmation_email.delay(order.id)
         except:
             print('[OrderViewSet] Error sending task to celery')
+
+        track_event(
+            "Order Successfully Placed",
+            {
+                "distinct_id": str(request.user.id),
+                "$user_id": str(request.user.id),
+                "order_id": str(order.id),
+                "total_amount": float(order.total_amount),
+                "items_count": order.items.count(),
+            },
+        )
         
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
