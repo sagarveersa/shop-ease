@@ -31,14 +31,17 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost']
+ALLOWED_HOSTS = ['localhost', '15.206.203.84']
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://localhost:8080',
+    'http://15.206.203.84:5173',
+    'http://15.206.203.84:8080'
 ]
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'http://localhost:8080',
+    'http://15.206.203.84:8080'
 ]
 
 
