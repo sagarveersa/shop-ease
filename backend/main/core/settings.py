@@ -230,3 +230,5 @@ MIXPANEL_TRACK_URL = os.environ.get(
     "MIXPANEL_TRACK_URL",
     "https://api.mixpanel.com/track",
 )
+
+print(f'AUTH0_CALLBACK_URL: {AUTH0_CALLBACK_URL}')

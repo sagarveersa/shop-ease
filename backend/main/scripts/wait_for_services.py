@@ -26,11 +26,11 @@ def wait_for_tcp(host: str, port: int, service_name: str, timeout: int, interval
 if __name__ == "__main__":
     timeout_seconds = int(os.getenv("WAIT_TIMEOUT", "90"))
 
-    db_host = os.getenv("DB_HOST", "db")
-    db_port = int(os.getenv("DB_PORT", os.getenv("DB_POST", "5432")))
+    db_host = os.environ.get("DB_HOST", "db")
+    db_port = int(os.environ.get("DB_PORT", os.getenv("DB_POST", "5432")))
 
-    redis_host = os.getenv("REDIS_HOST", "redis")
-    redis_port = int(os.getenv("REDIS_PORT", "6379"))
+    redis_host = os.environ.get("REDIS_HOST", "redis")
+    redis_port = int(os.environ.get("REDIS_PORT", "6379"))
 
     if env_flag("WAIT_FOR_DB", "true"):
         wait_for_tcp(db_host, db_port, "PostgreSQL", timeout_seconds)
