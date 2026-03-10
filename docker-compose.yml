@@ -131,7 +131,7 @@ services:
 
   gateway:
     build:
-      context: ./backend/gateway
+      context: ./gateway
       dockerfile: Dockerfile
     container_name: shop_ease_gateway
     restart: unless-stopped
