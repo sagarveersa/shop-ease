@@ -24,4 +24,6 @@ if accounts_user_exists and not is_applied:
 
 python manage.py migrate --noinput --fake-initial
 
+python manage.py collectstatic --noinput
+
 gunicorn core.wsgi:application --bind "0.0.0.0:8000" --workers 4

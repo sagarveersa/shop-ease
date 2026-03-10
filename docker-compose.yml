@@ -54,6 +54,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    volumes:
+      - static_data:/app/static
 
   worker:
     build:
@@ -114,9 +116,6 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      args:
-        VITE_API_URL: ${VITE_API_URL:-/api/}
-        VITE_CHAT_API_URL: ${VITE_CHAT_API_URL:-}
     container_name: shop_ease_frontend
     restart: unless-stopped
     depends_on:
@@ -135,7 +134,10 @@ services:
       - django
       - frontend
       - chat
+    volumes:
+      - static_data:/app/static
 
 volumes:
   postgres_data:
   redis_data:
+  static_data:
