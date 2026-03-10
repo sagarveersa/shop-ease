@@ -28,6 +28,7 @@ def _get_authenticated_user(request):
 
 
 class AnalyticsTrackView(APIView):
+    authentication_classes = []
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -72,6 +73,7 @@ class AnalyticsTrackView(APIView):
 
 
 class AnalyticsIdentifyView(APIView):
+    authentication_classes = []
     permission_classes = [AllowAny]
 
     def post(self, request):
