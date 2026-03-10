@@ -71,6 +71,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -160,6 +161,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'static/'
+STATICFILES_STORAGE= "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 REST_FRAMEWORK = {
 
@@ -187,8 +189,6 @@ SIMPLE_JWT = {
     'USER_ID_FIELD': 'id', # which field on the User model uniquely defines the user
     'USER_ID_CLAIM': 'user_id', # what key name to use inside the jwt payload
 }
-
-
 
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', "redis://127.0.0.1:6379/0")
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND')

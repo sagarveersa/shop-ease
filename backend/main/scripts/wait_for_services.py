@@ -1,11 +1,12 @@
 import os
 import socket
 import time
+from dotenv import load_dotenv
 
+load_dotenv()
 
 def env_flag(name: str, default: str = "true") -> bool:
     return os.getenv(name, default).strip().lower() in {"1", "true", "yes", "on"}
-
 
 def wait_for_tcp(host: str, port: int, service_name: str, timeout: int, interval: float = 1.0) -> None:
     start = time.time()
