@@ -116,13 +116,6 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      args:
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:80/api/}
-        VITE_CHAT_API_URL: ${VITE_CHAT_API_URL:-ws://localhost:80/api/ws/}
-        VITE_MIXPANEL_PROJECT_TOKEN: ${VITE_MIXPANEL_PROJECT_TOKEN:-}
-        VITE_AUTH0_AUDIENCE: ${VITE_AUTH0_AUDIENCE:-}
-        VITE_AUTH0_DOMAIN: ${VITE_AUTH0_DOMAIN:-}
-        VITE_AUTH0_CLIENT_ID: ${VITE_AUTH0_CLIENT_ID:-}
     container_name: shop_ease_frontend
     restart: unless-stopped
     depends_on:
