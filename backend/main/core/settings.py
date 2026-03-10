@@ -37,12 +37,12 @@ ALLOWED_HOSTS = ['localhost', PROD_HOST]
 CORS_ALLOWED_ORIGINS = [
     'http://localhost',
     f'http://{PROD_HOST}',
-    f'htts://{PROD_HOST}'
+    f'https://{PROD_HOST}'
 ]
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost',
     f'http://{PROD_HOST}',
-    f'htts://{PROD_HOST}'
+    f'https://{PROD_HOST}'
 ]
 
 
