@@ -1,3 +1,5 @@
+# Run this file from the root of the project to start the Django and Celery containers. It will build the image and run the Django container on port 80 and the Celery worker in the background.
+
 if [ "$(docker ps -aq -f name=shop-ease-django-container)" ]; then
     docker stop shop-ease-django-container && docker rm shop-ease-django-container
 fi
