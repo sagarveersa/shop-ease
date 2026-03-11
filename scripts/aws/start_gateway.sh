@@ -6,4 +6,5 @@ fi
 
 docker run -d -p 80:80 --name nginx-gateway \
   -v $(pwd)/nginx.conf:/etc/nginx/nginx.conf:ro \
+  -v /etc/letsencrypt:/etc/letsencrypt:ro \
   nginx:latest
