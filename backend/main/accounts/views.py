@@ -29,6 +29,8 @@ from .utils import _map_auth0_user, _build_custom_jwt_payload, _build_frontend_r
 
 
 class UserRegistrationView(CreateAPIView):
+    authentication_classes=[]
+    permission_classes=[AllowAny]
     serializer_class = UserRegistrationSerializer
 
 
