@@ -9,11 +9,10 @@ class ProductFilterset(django_filters.FilterSet):
     #     to_field_name="name",
     # )
     category = django_filters.BaseInFilter(
-        field_name="category__name",
+        field_name="categories__name",
         lookup_expr="in"
     )
 
     class Meta:
         model = Product
         fields = []
-

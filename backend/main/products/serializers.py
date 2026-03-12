@@ -2,10 +2,25 @@ from rest_framework import serializers
 from .models import Product, Category
 
 class ProductSerializer(serializers.ModelSerializer):
-    category = serializers.ReadOnlyField(source='category.name')
+    categories = serializers.SlugRelatedField(
+        slug_field="name",
+        many=True,
+        read_only=True,
+    )
+
     class Meta:
         model = Product
-        fields = "__all__"
+        fields = [
+            "id",
+            "name",
+            "categories",
+            "price",
+            "description",
+            "image_url",
+            "avg_rating",
+            "rating_count",
+            "stock",
+        ]
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,6 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import action
 from .serializers import OrderDetailSerializer, OrderCreateSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -20,7 +21,8 @@ class OrderViewSet(ModelViewSet):
         if self.action=="create":
             return Order.objects.filter(user=self.request.user)
         
-        return Order.objects.prefetch_related('items', 'items__product').all()
+        elif self.action in ["list", "cancel"]: 
+            return Order.objects.prefetch_related('items', 'items__product').filter(user=self.request.user)
 
     def get_serializer_class(self):
 
@@ -56,6 +58,22 @@ class OrderViewSet(ModelViewSet):
     
     def perform_create(self, serializer, request):
         return serializer.save(user=request.user)
+
+    @action(detail=True, methods=["post"])
+    def cancel(self, request, pk=None):
+        order = self.get_object()
+
+        if order.status in [Order.Status.CANCELLED, Order.Status.DELIVERED, Order.Status.SHIPPED]:
+            return Response(
+                {"detail": "Order cannot be cancelled at this stage."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        order.status = Order.Status.CANCELLED
+        order.save(update_fields=["status"])
+
+        serializer = OrderDetailSerializer(order)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
         
 def send_test_mail_view(request):

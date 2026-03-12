@@ -14,7 +14,7 @@ class Category(models.Model):
 class Product(models.Model):
     id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField()
-    category = models.ForeignKey(Category, null=True, on_delete=models.SET_NULL)
+    categories = models.ManyToManyField(Category, related_name="products", blank=True)
     price = models.DecimalField(max_digits=5, decimal_places=2)
     description = models.TextField()
     image_url = models.CharField(default="https://images.unsplash.com/photo-1505740420928-5e560c06d30e")
