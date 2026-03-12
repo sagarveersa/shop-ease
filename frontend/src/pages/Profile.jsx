@@ -191,18 +191,20 @@ export default function Profile() {
   };
 
   return (
-    <div className="h-[100dvh] bg-gray-950 text-white">
+    <div className="h-[100dvh] bg-gray-950 light:bg-slate-50 text-white light:text-slate-900">
       <Navbar />
 
       <main className="mt-16 h-[calc(100dvh-4rem)] overflow-y-auto custom-scrollbar px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl space-y-6">
-          <section className="rounded-2xl border border-gray-800 bg-gray-900 p-6 md:p-8">
+          <section className="rounded-2xl border border-gray-800 light:border-slate-200 bg-gray-900 light:bg-white p-6 md:p-8">
             {state.status === "loading" ? (
-              <p className="text-gray-300">Loading profile...</p>
+              <p className="text-gray-300 light:text-slate-600">
+                Loading profile...
+              </p>
             ) : null}
 
             {state.status === "error" ? (
-              <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-red-300">
+              <div className="rounded-xl border border-red-500/40 light:border-red-200 bg-red-500/10 light:bg-red-50 p-4 text-red-300 light:text-red-600">
                 {state.error}
               </div>
             ) : null}
@@ -227,13 +229,13 @@ export default function Profile() {
                       <h1 className="text-2xl font-bold md:text-3xl">
                         {profile.name || "Unnamed"}
                       </h1>
-                      <p className="text-gray-400">
+                      <p className="text-gray-400 light:text-slate-500">
                         Member since {formatMemberSince(profile.dateJoined)}
                       </p>
                     </div>
                   </div>
 
-                  <div className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold">
+                  <div className="inline-flex items-center gap-2 rounded-lg border border-white/10 light:border-slate-200 px-4 py-2 text-sm font-semibold">
                     <ShieldCheck className="h-4 w-4" />
                     <span>{isStaff ? "Staff Account" : "Customer Account"}</span>
                   </div>
@@ -241,38 +243,42 @@ export default function Profile() {
 
                 <div className="mt-6 space-y-4">
                   <div>
-                    <label className="mb-2 block text-sm text-gray-300">Name</label>
+                    <label className="mb-2 block text-sm text-gray-300 light:text-slate-600">
+                      Name
+                    </label>
                     <input
                       type="text"
                       value={state.form.name}
                       disabled={!state.isEditing || isAuth0Account}
                       onChange={(e) => onChange("name", e.target.value)}
-                      className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2.5 text-white placeholder-gray-500 disabled:cursor-not-allowed disabled:opacity-70"
+                      className="w-full rounded-lg border border-gray-700 light:border-slate-300 bg-gray-800 light:bg-white px-4 py-2.5 text-white light:text-slate-900 placeholder-gray-500 light:placeholder-slate-500 disabled:cursor-not-allowed disabled:opacity-70"
                     />
                     {isAuth0Account ? (
-                      <p className="mt-2 text-xs text-gray-400">
+                      <p className="mt-2 text-xs text-gray-400 light:text-slate-500">
                         Name is managed by Auth0.
                       </p>
                     ) : null}
                   </div>
 
                   <div>
-                    <label className="mb-2 block text-sm text-gray-300">Email</label>
+                    <label className="mb-2 block text-sm text-gray-300 light:text-slate-600">
+                      Email
+                    </label>
                     <div className="relative">
-                      <Mail className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Mail className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-gray-400 light:text-slate-500" />
                       <input
                         type="email"
                         value={state.form.email}
                         disabled
                         readOnly
-                        className="w-full rounded-lg border border-gray-700 bg-gray-800 py-2.5 pl-10 pr-4 text-white placeholder-gray-500 disabled:cursor-not-allowed disabled:opacity-70"
+                        className="w-full rounded-lg border border-gray-700 light:border-slate-300 bg-gray-800 light:bg-white py-2.5 pl-10 pr-4 text-white light:text-slate-900 placeholder-gray-500 light:placeholder-slate-500 disabled:cursor-not-allowed disabled:opacity-70"
                       />
                     </div>
                   </div>
                 </div>
 
                 {state.saveError ? (
-                  <div className="mt-4 rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300">
+                  <div className="mt-4 rounded-lg border border-red-500/40 light:border-red-200 bg-red-500/10 light:bg-red-50 p-3 text-sm text-red-300 light:text-red-600">
                     {state.saveError}
                   </div>
                 ) : null}
@@ -297,7 +303,7 @@ export default function Profile() {
                       <button
                         onClick={() => dispatch({ type: "profile/edit/cancel" })}
                         disabled={state.saveStatus === "loading"}
-                        className="rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-sm font-medium text-gray-200 hover:bg-gray-700 disabled:opacity-60 transition"
+                        className="rounded-lg border border-gray-700 light:border-slate-300 bg-gray-800 light:bg-white px-4 py-2 text-sm font-medium text-gray-200 light:text-slate-700 hover:bg-gray-700 light:hover:bg-slate-100 disabled:opacity-60 transition"
                       >
                         Cancel
                       </button>

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ProductService } from "../service/product";
 import LoadingSpinner from "./LoadingSpinner";
 
-export default function ProductFilterSidebar({ filter, setFilter }) {
+export default function ProductFilterSidebar({ filter, dispatch }) {
   const [allowedCategories, setAllowedCategories] = useState(
     filter.allowedCategories ? filter.allowedCategories : [],
   );
@@ -36,25 +36,28 @@ export default function ProductFilterSidebar({ filter, setFilter }) {
   const handleReset = () => {
     setAllowedCategories([]);
     setSort("default");
-    setFilter((prev) => {
-      const { allowedCategories, sort, ...rest } = prev;
-      const newFilter = { ...rest, sort: "default" };
-      return newFilter;
+    const { allowedCategories, sort, ...rest } = filter;
+    dispatch({
+      type: "filter/set",
+      payload: { ...rest, sort: "default" },
     });
   };
 
   const handleApply = () => {
     if (allowedCategories.length > 0) {
-      setFilter((prev) => ({
-        ...prev,
-        allowedCategories: allowedCategories,
-        sort: sort,
-      }));
+      dispatch({
+        type: "filter/set",
+        payload: {
+          ...filter,
+          allowedCategories: allowedCategories,
+          sort: sort,
+        },
+      });
     } else {
-      setFilter((prev) => {
-        const { allowedCategories, ...rest } = prev;
-        const newFilter = { ...rest, sort: sort };
-        return newFilter;
+      const { allowedCategories, ...rest } = filter;
+      dispatch({
+        type: "filter/set",
+        payload: { ...rest, sort: sort },
       });
     }
   };
@@ -64,15 +67,24 @@ export default function ProductFilterSidebar({ filter, setFilter }) {
   }, [filter]);
 
   return (
-    <aside className="bg-gray-800 p-4 space-y-6 text-gray-100 overflow-y-auto rounded-xl shadow-lg">
+    <aside className="bg-[#0f2038] light:bg-white border border-white/10 light:border-slate-200 rounded-xl p-4 text-gray-100 light:text-slate-900 shadow-lg">
       {/* Title */}
-      <h2 className="text-xl font-semibold text-white">Filters</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-white light:text-slate-900">
+          Refine
+        </h2>
+        <span className="text-xs text-gray-400 light:text-slate-500">
+          Filters
+        </span>
+      </div>
 
       {/* Categories */}
-      <div>
-        <h3 className="font-medium mb-3 text-gray-200">Categories</h3>
+      <div className="mt-5">
+        <h3 className="text-sm font-semibold text-gray-200 light:text-slate-700 uppercase tracking-wide">
+          Department
+        </h3>
 
-        <div className="space-y-2">
+        <div className="mt-3 space-y-2">
           {loading && <LoadingSpinner />}
 
           {!loading &&
@@ -81,35 +93,20 @@ export default function ProductFilterSidebar({ filter, setFilter }) {
                 key={cat}
                 className="flex items-center gap-3 cursor-pointer group"
               >
-                {/* Custom Checkbox */}
                 <input
                   type="checkbox"
                   checked={allowedCategories.includes(cat)}
                   onChange={() => handleCategorySelection(cat)}
-                  className="peer hidden"
+                  className="
+                    h-4 w-4 rounded-sm
+                    bg-[#0b172a] border border-white/30
+                    text-blue-500
+                    focus:ring-2 focus:ring-blue-500/40
+                    light:bg-slate-100 light:border-slate-300
+                  "
                 />
 
-                <div
-                  className="h-5 w-5 rounded-md border border-gray-500 bg-gray-700 
-                            peer-checked:bg-blue-600 peer-checked:border-blue-500
-                            flex items-center justify-center transition"
-                >
-                  <svg
-                    className="hidden peer-checked:block h-4 w-4 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                </div>
-
-                <span className="text-sm text-gray-200 group-hover:text-white transition">
+                <span className="text-sm text-gray-200 light:text-slate-700 group-hover:text-white light:group-hover:text-slate-900 transition">
                   {cat}
                 </span>
               </label>
@@ -118,10 +115,12 @@ export default function ProductFilterSidebar({ filter, setFilter }) {
       </div>
 
       {/* Sorting */}
-      <div>
-        <h3 className="font-medium mb-3 text-gray-200">Sort by Price</h3>
+      <div className="mt-6 border-t border-white/10 light:border-slate-200 pt-5">
+        <h3 className="text-sm font-semibold text-gray-200 light:text-slate-700 uppercase tracking-wide">
+          Sort by price
+        </h3>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 gap-2 mt-3">
           <label className="cursor-pointer">
             <input
               type="radio"
@@ -132,9 +131,9 @@ export default function ProductFilterSidebar({ filter, setFilter }) {
               onChange={(e) => setSort(e.target.value)}
             />
             <div
-              className="py-2 text-center rounded-lg border border-gray-600 bg-gray-700
-                     peer-checked:bg-blue-600 peer-checked:border-blue-500
-                     hover:bg-gray-600 transition text-sm"
+              className="py-2 px-3 rounded-lg border border-white/10 light:border-slate-200 bg-[#0b172a] light:bg-slate-100
+                     peer-checked:bg-blue-500/20 peer-checked:border-blue-400
+                     hover:border-blue-400/50 transition text-sm"
             >
               Low → High
             </div>
@@ -150,9 +149,9 @@ export default function ProductFilterSidebar({ filter, setFilter }) {
               onChange={(e) => setSort(e.target.value)}
             />
             <div
-              className="py-2 text-center rounded-lg border border-gray-600 bg-gray-700
-                     peer-checked:bg-blue-600 peer-checked:border-blue-500
-                     hover:bg-gray-600 transition text-sm"
+              className="py-2 px-3 rounded-lg border border-white/10 light:border-slate-200 bg-[#0b172a] light:bg-slate-100
+                     peer-checked:bg-blue-500/20 peer-checked:border-blue-400
+                     hover:border-blue-400/50 transition text-sm"
             >
               High → Low
             </div>
@@ -161,9 +160,9 @@ export default function ProductFilterSidebar({ filter, setFilter }) {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-2 pt-2">
+      <div className="flex gap-2 pt-5 border-t border-white/10 light:border-slate-200 mt-6">
         <button
-          className="flex-grow py-2 bg-gray-700 text-gray-200 rounded-lg hover:bg-gray-600 transition"
+          className="flex-grow py-2 bg-[#0b172a] light:bg-slate-100 text-gray-200 light:text-slate-700 rounded-lg border border-white/10 light:border-slate-200 hover:border-white/20 light:hover:border-slate-300 transition"
           onClick={handleReset}
         >
           Reset

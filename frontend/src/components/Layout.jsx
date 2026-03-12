@@ -3,9 +3,11 @@ import { ToastContainer } from "react-toastify";
 import ChatBubble from "./ChatBubble";
 import { useContext } from "react";
 import { authContext } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
 export default function Layout() {
   const { isStaff } = useContext(authContext);
+  const { theme } = useTheme();
 
   return (
     <>
@@ -20,7 +22,7 @@ export default function Layout() {
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="dark"
+        theme={theme}
         // transition={Bounce}
       />
       {!isStaff ? <ChatBubble /> : null}

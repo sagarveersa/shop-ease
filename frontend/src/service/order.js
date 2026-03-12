@@ -31,6 +31,23 @@ export const OrderService = {
     }
   },
 
+  cancelOrder: async ({ orderId, signal }) => {
+    try {
+      const response = await api.post(`orders/${orderId}/cancel/`, null, {
+        signal: signal,
+      });
+
+      return { status: "success", data: response.data };
+    } catch (error) {
+      console.log(`[Service] ${error}`);
+      if (error.name === "CanceledError") {
+        return { status: "aborted", data: {} };
+      }
+
+      return { status: "error", data: {} };
+    }
+  },
+
   createOrder: async ({ signal, form, items }) => {
     try {
       let shippingAddress = "";

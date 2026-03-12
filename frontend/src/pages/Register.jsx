@@ -56,17 +56,17 @@ export default function Register() {
   };
 
   return (
-    <div className="bg-gray-950 h-full overflow-y-auto">
+    <div className="bg-gray-950 light:bg-slate-50 h-full overflow-y-auto">
       <Navbar />
 
       <div className="mt-16 flex items-center justify-center p-4 pt-12">
         <div className="w-full max-w-sm">
-          <div className="bg-gray-900 rounded-2xl shadow-2xl p-6 border border-gray-800">
+          <div className="bg-gray-900 light:bg-white rounded-2xl shadow-2xl p-6 border border-gray-800 light:border-slate-200">
             <div className="mb-6">
-              <h1 className="text-2xl font-bold text-white mb-2">
+              <h1 className="text-2xl font-bold text-white light:text-slate-900 mb-2">
                 Create Account
               </h1>
-              <p className="text-gray-400 text-sm">
+              <p className="text-gray-400 light:text-slate-600 text-sm">
                 Enter your details to get started
               </p>
             </div>
@@ -75,7 +75,7 @@ export default function Register() {
               <div>
                 <label
                   htmlFor="name"
-                  className="block text-sm font-medium text-gray-300 mb-2"
+                  className="block text-sm font-medium text-gray-300 light:text-slate-600 mb-2"
                 >
                   Name
                 </label>
@@ -86,14 +86,14 @@ export default function Register() {
                   placeholder="John Doe"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  className="w-full px-4 py-2.5 bg-gray-800 light:bg-white border border-gray-700 light:border-slate-300 rounded-lg text-white light:text-slate-900 placeholder-gray-500 light:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-gray-300 mb-2"
+                  className="block text-sm font-medium text-gray-300 light:text-slate-600 mb-2"
                 >
                   Email
                 </label>
@@ -104,14 +104,14 @@ export default function Register() {
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  className="w-full px-4 py-2.5 bg-gray-800 light:bg-white border border-gray-700 light:border-slate-300 rounded-lg text-white light:text-slate-900 placeholder-gray-500 light:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="password"
-                  className="block text-sm font-medium text-gray-300 mb-2"
+                  className="block text-sm font-medium text-gray-300 light:text-slate-600 mb-2"
                 >
                   Password
                 </label>
@@ -122,7 +122,7 @@ export default function Register() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  className="w-full px-4 py-2.5 bg-gray-800 light:bg-white border border-gray-700 light:border-slate-300 rounded-lg text-white light:text-slate-900 placeholder-gray-500 light:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 />
               </div>
 
@@ -145,14 +145,14 @@ export default function Register() {
 
               {useAuth0 ? (
                 <>
-                  <div className="flex items-center gap-3 text-xs text-gray-500">
-                    <span className="h-px flex-1 bg-gray-700" />
+                  <div className="flex items-center gap-3 text-xs text-gray-500 light:text-slate-500">
+                    <span className="h-px flex-1 bg-gray-700 light:bg-slate-200" />
                     <span>or</span>
-                    <span className="h-px flex-1 bg-gray-700" />
+                    <span className="h-px flex-1 bg-gray-700 light:bg-slate-200" />
                   </div>
                   <button
                     onClick={handleAuth0Signup}
-                    className="w-full bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white font-semibold py-2.5 rounded-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+                    className="w-full bg-gray-800 light:bg-white hover:bg-gray-700 light:hover:bg-slate-100 border border-gray-700 light:border-slate-300 text-white light:text-slate-900 font-semibold py-2.5 rounded-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
                   >
                     Continue with Auth0
                   </button>
@@ -161,7 +161,7 @@ export default function Register() {
             </div>
 
             <div className="mt-5 text-center">
-              <p className="text-gray-400 text-sm">
+              <p className="text-gray-400 light:text-slate-600 text-sm">
                 Already have an account?
                 <Link
                   to="/login"

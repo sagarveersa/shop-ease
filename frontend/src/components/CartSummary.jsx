@@ -30,23 +30,27 @@ export default function CartSummary() {
   };
 
   return (
-    <div className="bg-gray-800 border border-gray-700 rounded-2xl shadow-lg w-80 p-6">
-      <h1 className="text-xl font-bold text-white mb-6">Order Summary</h1>
+    <div className="bg-gray-800 light:bg-white border border-gray-700 light:border-slate-200 rounded-2xl shadow-lg w-80 p-6">
+      <h1 className="text-xl font-bold text-white light:text-slate-900 mb-6">
+        Order Summary
+      </h1>
 
       <div className="space-y-4">
-        <div className="flex justify-between text-gray-300">
+        <div className="flex justify-between text-gray-300 light:text-slate-600">
           <span>Total Items</span>
-          <span className="font-semibold text-white">{totalItems}</span>
+          <span className="font-semibold text-white light:text-slate-900">
+            {totalItems}
+          </span>
         </div>
 
-        <div className="flex justify-between text-gray-300">
+        <div className="flex justify-between text-gray-300 light:text-slate-600">
           <span>Total Price</span>
-          <span className="font-semibold text-white">
+          <span className="font-semibold text-white light:text-slate-900">
             ${totalPrice.toFixed(2)}
           </span>
         </div>
 
-        <div className="border-t border-gray-700 pt-4 flex justify-between text-lg font-bold text-white">
+        <div className="border-t border-gray-700 light:border-slate-200 pt-4 flex justify-between text-lg font-bold text-white light:text-slate-900">
           <span>Grand Total</span>
           <span>${totalPrice.toFixed(2)}</span>
         </div>

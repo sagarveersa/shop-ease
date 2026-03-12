@@ -4,6 +4,7 @@ import App from "./App";
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 import { CheckoutProvider } from "./context/CheckoutContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import "./index.css";
 import { initAnalytics } from "./utils/analytics";
 
@@ -25,8 +26,10 @@ const renderApp = (
 
 root.render(
   <React.StrictMode>
-    <AuthProvider useAuth0Integration={USE_AUTH0_INTEGRATION}>
-      {renderApp}
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider useAuth0Integration={USE_AUTH0_INTEGRATION}>
+        {renderApp}
+      </AuthProvider>
+    </ThemeProvider>
   </React.StrictMode>,
 );

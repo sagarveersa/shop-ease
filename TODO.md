@@ -1,5 +1,3 @@
 - in login page there are two tabs - for user and staff both works for staff
-- add loggin everywhere in the backend and frontend
 - change action naming convention to just domain/action
-- deploy to AWS
 - make frontend use the profile image obtained from oauth

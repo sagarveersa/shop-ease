@@ -5,7 +5,7 @@ export default function Home() {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-gray-950 h-[100dvh] flex flex-col overflow-hidden text-white">
+    <div className="bg-gray-950 light:bg-slate-50 h-[100dvh] flex flex-col overflow-hidden text-white light:text-slate-900">
       <Navbar />
 
       <main className="pt-16 flex-1 flex items-center justify-center px-6">
@@ -19,7 +19,7 @@ export default function Home() {
           </h1>
 
           {/* Subheading */}
-          <p className="text-gray-400 text-lg md:text-xl">
+          <p className="text-gray-400 light:text-slate-600 text-lg md:text-xl">
             Browse curated categories, manage your cart effortlessly, and enjoy
             a seamless shopping experience.
           </p>
@@ -42,7 +42,7 @@ export default function Home() {
       </main>
 
       {/* Footer hint */}
-      <footer className="text-center text-gray-500 text-sm pb-6">
+      <footer className="text-center text-gray-500 light:text-slate-500 text-sm pb-6">
         © {new Date().getFullYear()} ShopEase. All rights reserved.
       </footer>
     </div>

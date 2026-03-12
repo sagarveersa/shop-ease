@@ -56,6 +56,14 @@ function reducer(state, action) {
       };
     }
 
+    case "checkout/idle": {
+      return {
+        ...state,
+        status: "idle",
+        error: null,
+      };
+    }
+
     case "checkout/reset": {
       return initialState;
     }
@@ -97,19 +105,17 @@ export default function Checkout() {
   useEffect(() => {
     if (state.status === "error") {
       toast.error(state.error);
+      dispatch({ type: "checkout/idle" });
       return;
-      // dispatch({ type: "checkout/reset" });
     }
 
     if (state.status === "success") {
       const timer = setTimeout(() => {
         navigate("/orders");
-        dispatch({ type: "checkout/success" });
       }, 2000);
       return () => clearTimeout(timer);
-      // dispatch({ type: "checkout/reset" });
     }
-  }, [state.status]);
+  }, [state.status, navigate, state.error]);
 
   if (!checkoutItems || !setCheckoutItems) {
     return <Navigate to="/login" />;
@@ -119,9 +125,14 @@ export default function Checkout() {
     dispatch({ type: "checkout/setField", field: field, value: value });
   };
 
+  // if checkout products list is empty redirect user to products page
+  console.log(checkoutItems);
+  if (checkoutItems.length === 0) {
+    return <Navigate to="/products" />;
+  }
+
   const handlePlaceOrder = async () => {
     // validate
-    console.log(state.form);
     for (const field in state.form) {
       if (!state.form[field]) {
         dispatch({ type: "checkout/error", error: `${field} can't be empty` });
@@ -135,8 +146,6 @@ export default function Checkout() {
       form: state.form,
       items: checkoutItems,
     });
-
-    console.log(response);
 
     switch (response.status) {
       case "success": {
@@ -161,15 +170,17 @@ export default function Checkout() {
       <Navbar />
       <CheckoutOverlay status={state.status} />
 
-      <div className="min-h-[100dvh] bg-gray-900 text-gray-100 mt-16 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-[100dvh] bg-gray-900 light:bg-slate-50 text-gray-100 light:text-slate-900 mt-16 py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Page Heading */}
-          <h1 className="text-3xl font-bold text-white mb-8">Checkout</h1>
+          <h1 className="text-3xl font-bold text-white light:text-slate-900 mb-8">
+            Checkout
+          </h1>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* ================= SHIPPING SECTION ================= */}
             <div className="lg:col-span-2">
-              <div className="bg-gray-800 rounded-2xl p-6 sm:p-8 shadow-lg">
+              <div className="bg-gray-800 light:bg-white border border-gray-700 light:border-slate-200 rounded-2xl p-6 sm:p-8 shadow-lg">
                 <h2 className="text-xl font-semibold mb-6">Shipping Address</h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -244,26 +255,32 @@ export default function Checkout() {
 
             {/* ================= ORDER SUMMARY ================= */}
             <aside className="lg:sticky lg:top-24 h-fit">
-              <div className="bg-gray-800 rounded-2xl p-6 shadow-lg flex flex-col">
+              <div className="bg-gray-800 light:bg-white border border-gray-700 light:border-slate-200 rounded-2xl p-6 shadow-lg flex flex-col">
                 <h2 className="text-xl font-semibold mb-6">Order Summary</h2>
 
                 <div className="space-y-4 flex-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-300">Subtotal</span>
+                    <span className="text-gray-300 light:text-slate-600">
+                      Subtotal
+                    </span>
                     <span>${subtotal.toFixed(2)}</span>
                   </div>
 
                   <div className="flex justify-between">
-                    <span className="text-gray-300">Shipping</span>
+                    <span className="text-gray-300 light:text-slate-600">
+                      Shipping
+                    </span>
                     <span className="text-green-400">Free</span>
                   </div>
 
                   <div className="flex justify-between">
-                    <span className="text-gray-300">Tax</span>
+                    <span className="text-gray-300 light:text-slate-600">
+                      Tax
+                    </span>
                     <span>${tax.toFixed(2)}</span>
                   </div>
 
-                  <div className="border-t border-gray-700 pt-4 flex justify-between font-bold text-lg">
+                  <div className="border-t border-gray-700 light:border-slate-200 pt-4 flex justify-between font-bold text-lg">
                     <span>Total</span>
                     <span>${total.toFixed(2)}</span>
                   </div>
@@ -276,7 +293,7 @@ export default function Checkout() {
                   Place Order
                 </button>
 
-                <p className="text-xs text-gray-400 mt-4 text-center">
+                <p className="text-xs text-gray-400 light:text-slate-500 mt-4 text-center">
                   Your shipping details will be used to deliver your order.
                 </p>
               </div>
@@ -298,8 +315,18 @@ export default function Checkout() {
           transition: all 0.2s ease;
         }
 
+        .light .input {
+          background: #ffffff;
+          border: 1px solid #cbd5e1;
+          color: #0f172a;
+        }
+
         .input::placeholder {
           color: #9ca3af;
+        }
+
+        .light .input::placeholder {
+          color: #64748b;
         }
 
         .input:focus {

@@ -151,21 +151,23 @@ export default function Login() {
   const showAuth0Button = useAuth0 && state.mode === "customer";
 
   return (
-    <div className="bg-gray-950 h-full overflow-y-auto">
+    <div className="bg-gray-950 light:bg-slate-50 h-full overflow-y-auto">
       <Navbar />
 
       <div className="mt-16 flex items-center justify-center p-4 pt-12">
         <div className="w-full max-w-sm">
-          <div className="bg-gray-900 rounded-2xl shadow-2xl p-6 border border-gray-800">
+          <div className="bg-gray-900 light:bg-white rounded-2xl shadow-2xl p-6 border border-gray-800 light:border-slate-200">
             <div className="mb-6">
-              <h1 className="text-2xl font-bold text-white mb-2">Log in</h1>
-              <p className="text-gray-400 text-sm">
+              <h1 className="text-2xl font-bold text-white light:text-slate-900 mb-2">
+                Log in
+              </h1>
+              <p className="text-gray-400 light:text-slate-600 text-sm">
                 Enter your details to get started
               </p>
             </div>
 
             {useAuth0 ? (
-              <div className="mb-5 rounded-lg border border-gray-700 p-1 grid grid-cols-2 gap-1">
+              <div className="mb-5 rounded-lg border border-gray-700 light:border-slate-200 p-1 grid grid-cols-2 gap-1">
                 <button
                   onClick={() =>
                     dispatch({ type: "login/mode/update", payload: "customer" })
@@ -173,7 +175,7 @@ export default function Login() {
                   className={`rounded-md py-2 text-sm font-medium transition ${
                     state.mode === "customer"
                       ? "bg-blue-600 text-white"
-                      : "text-gray-300 hover:bg-gray-800"
+                      : "text-gray-300 light:text-slate-600 hover:bg-gray-800 light:hover:bg-slate-100"
                   }`}
                 >
                   Customer
@@ -185,7 +187,7 @@ export default function Login() {
                   className={`rounded-md py-2 text-sm font-medium transition ${
                     state.mode === "staff"
                       ? "bg-emerald-600 text-white"
-                      : "text-gray-300 hover:bg-gray-800"
+                      : "text-gray-300 light:text-slate-600 hover:bg-gray-800 light:hover:bg-slate-100"
                   }`}
                 >
                   Staff
@@ -195,7 +197,7 @@ export default function Login() {
 
             <div className="space-y-5">
               {useAuth0 && state.mode === "staff" ? (
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-400 light:text-slate-500">
                   Staff accounts can log in directly without Auth0 registration.
                 </p>
               ) : null}
@@ -203,7 +205,7 @@ export default function Login() {
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-gray-300 mb-2"
+                  className="block text-sm font-medium text-gray-300 light:text-slate-600 mb-2"
                 >
                   Email
                 </label>
@@ -219,14 +221,14 @@ export default function Login() {
                       payload: { field: "email", value: e.target.value },
                     })
                   }
-                  className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  className="w-full px-4 py-2.5 bg-gray-800 light:bg-white border border-gray-700 light:border-slate-300 rounded-lg text-white light:text-slate-900 placeholder-gray-500 light:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="password"
-                  className="block text-sm font-medium text-gray-300 mb-2"
+                  className="block text-sm font-medium text-gray-300 light:text-slate-600 mb-2"
                 >
                   Password
                 </label>
@@ -242,7 +244,7 @@ export default function Login() {
                       payload: { field: "password", value: e.target.value },
                     })
                   }
-                  className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  className="w-full px-4 py-2.5 bg-gray-800 light:bg-white border border-gray-700 light:border-slate-300 rounded-lg text-white light:text-slate-900 placeholder-gray-500 light:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 />
               </div>
 
@@ -262,20 +264,20 @@ export default function Login() {
 
               {showAuth0Button ? (
                 <>
-                  <div className="flex items-center gap-3 text-xs text-gray-500">
-                    <span className="h-px flex-1 bg-gray-700" />
+                  <div className="flex items-center gap-3 text-xs text-gray-500 light:text-slate-500">
+                    <span className="h-px flex-1 bg-gray-700 light:bg-slate-200" />
                     <span>or</span>
-                    <span className="h-px flex-1 bg-gray-700" />
+                    <span className="h-px flex-1 bg-gray-700 light:bg-slate-200" />
                   </div>
                   {!isAuthLoading ? (
                     <button
                       onClick={handleAuth0Login}
-                      className="w-full bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white font-semibold py-2.5 rounded-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+                      className="w-full bg-gray-800 light:bg-white hover:bg-gray-700 light:hover:bg-slate-100 border border-gray-700 light:border-slate-300 text-white light:text-slate-900 font-semibold py-2.5 rounded-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
                     >
                       Continue with Auth0
                     </button>
                   ) : (
-                    <button className="flex flex-row justify-center w-full bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white font-semibold py-2.5 rounded-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]">
+                    <button className="flex flex-row justify-center w-full bg-gray-800 light:bg-white hover:bg-gray-700 light:hover:bg-slate-100 border border-gray-700 light:border-slate-300 text-white light:text-slate-900 font-semibold py-2.5 rounded-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]">
                       <div className="w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"></div>
                     </button>
                   )}
@@ -284,7 +286,7 @@ export default function Login() {
             </div>
 
             <div className="mt-5 text-center">
-              <p className="text-gray-400 text-sm">
+              <p className="text-gray-400 light:text-slate-600 text-sm">
                 Don't have an account?
                 <Link
                   to="/register"

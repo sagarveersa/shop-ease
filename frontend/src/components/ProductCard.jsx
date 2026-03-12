@@ -1,27 +1,22 @@
-import { useContext, useEffect, useState } from "react";
-import { cartContext } from "../context/CartContext";
-import { authContext } from "../context/AuthContext";
+import { useContext } from "react";
 import { Link } from "react-router-dom";
+import { authContext } from "../context/AuthContext";
+import { cartContext } from "../context/CartContext";
 
 export default function ProductCard({ product }) {
   const { loggedIn } = useContext(authContext);
   const { cart, addToCart } = useContext(cartContext);
-  const [inCart, setInCart] = useState(false);
-
-  useEffect(() => {
-    if (loggedIn && cart && cart[product.id]) {
-      setInCart(true);
-    } else {
-      setInCart(false);
-    }
-  }, [cart]);
+  const inCart = loggedIn && cart && product && cart[product.id];
+  const categoryLabel = Array.isArray(product.categories)
+    ? product.categories.join(", ")
+    : product.category || "Uncategorized";
 
   return (
     // <Link to={`/product/${product.id}`} className="group">
     <div className="h-full flex flex-col bg-transparent group">
       <Link to={`/product/${product.id}`}>
         {/* Image */}
-        <div className="relative w-full aspect-square bg-gray-100 rounded-md overflow-hidden">
+        <div className="relative w-full aspect-square bg-gray-100 light:bg-slate-100 rounded-md overflow-hidden">
           <img
             src={product.imageUrl}
             alt={product.name}
@@ -33,15 +28,17 @@ export default function ProductCard({ product }) {
       {/* Info */}
       <div className="mt-3 flex flex-col flex-1">
         {/* Name */}
-        <h3 className="text-sm font-medium text-gray-100 line-clamp-2 group-hover:text-blue-400 transition">
+        <h3 className="text-sm font-medium text-gray-100 light:text-slate-900 line-clamp-2 group-hover:text-blue-400 transition">
           {product.name}
         </h3>
 
         {/* Category */}
-        <p className="text-xs text-gray-400 mt-1">{product.category}</p>
+        <p className="text-xs text-gray-400 light:text-slate-500 mt-1">
+          {categoryLabel}
+        </p>
 
         {/* Price */}
-        <p className="text-lg font-bold text-white mt-1">
+        <p className="text-lg font-bold text-white light:text-slate-900 mt-1">
           ${product.price.toFixed(2)}
         </p>
 
@@ -64,7 +61,7 @@ export default function ProductCard({ product }) {
           {loggedIn && inCart && (
             <button
               disabled
-              className="flex-1 text-xs py-2 bg-gray-300 text-gray-600 rounded-md cursor-not-allowed"
+              className="flex-1 text-xs py-2 bg-gray-300 light:bg-slate-200 text-gray-600 light:text-slate-500 rounded-md cursor-not-allowed"
             >
               In Cart
             </button>
@@ -73,7 +70,7 @@ export default function ProductCard({ product }) {
           {!loggedIn && (
             <button
               disabled
-              className="flex-1 text-xs py-2 bg-gray-300 text-gray-600 rounded-md cursor-not-allowed"
+              className="flex-1 text-xs py-2 bg-gray-300 light:bg-slate-200 text-gray-600 light:text-slate-500 rounded-md cursor-not-allowed"
             >
               Add to Cart
             </button>

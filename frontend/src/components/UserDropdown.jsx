@@ -30,7 +30,7 @@ export default function UserDropdown() {
         className="
           flex items-center gap-2 px-3 py-2
           rounded-full
-          bg-gray-800 hover:bg-gray-700
+          bg-gray-800 light:bg-slate-100 hover:bg-gray-700 light:hover:bg-slate-200
           transition
         "
       >
@@ -40,10 +40,10 @@ export default function UserDropdown() {
           </div>
 
           {/* Online indicator */}
-          <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 border-2 border-gray-900 rounded-full" />
+          <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 border-2 border-gray-900 light:border-slate-100 rounded-full" />
         </div>
 
-        <span className="hidden md:inline text-sm font-medium text-gray-100">
+        <span className="hidden md:inline text-sm font-medium text-gray-100 light:text-slate-900">
           {name}
         </span>
       </div>
@@ -54,7 +54,9 @@ export default function UserDropdown() {
           className="
             absolute right-0 mt-3 w-56
             bg-[#162338]
+            light:bg-white
             border border-white/10
+            light:border-slate-200
             rounded-xl
             shadow-xl
             overflow-hidden
@@ -62,9 +64,9 @@ export default function UserDropdown() {
           "
         >
           {/* User Info */}
-          <div className="px-4 py-3 border-b border-white/10">
-            <p className="text-sm font-medium text-white">{name}</p>
-            <p className="text-xs text-gray-400">signed in</p>
+          <div className="px-4 py-3 border-b border-white/10 light:border-slate-200">
+            <p className="text-sm font-medium text-white light:text-slate-900">{name}</p>
+            <p className="text-xs text-gray-400 light:text-slate-500">signed in</p>
           </div>
 
           {/* Actions */}
@@ -81,7 +83,7 @@ export default function UserDropdown() {
               onClick={() => navigate("/orders")}
             />
 
-            <div className="border-t border-white/10 my-2" />
+            <div className="border-t border-white/10 light:border-slate-200 my-2" />
 
             <DropdownItem
               icon={<LogOut size={16} />}

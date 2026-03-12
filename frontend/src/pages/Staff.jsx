@@ -539,18 +539,18 @@ export default function Staff() {
 
   const registrationBadgeClass =
     state.registrationStatus === "success"
-      ? "bg-green-500/15 text-green-300 border-green-500/30"
+      ? "bg-green-500/15 text-green-300 border-green-500/30 light:bg-green-50 light:text-green-700 light:border-green-200"
       : state.registrationStatus === "failed"
-        ? "bg-red-500/15 text-red-300 border-red-500/30"
-        : "bg-yellow-500/15 text-yellow-300 border-yellow-500/30";
+        ? "bg-red-500/15 text-red-300 border-red-500/30 light:bg-red-50 light:text-red-600 light:border-red-200"
+        : "bg-yellow-500/15 text-yellow-300 border-yellow-500/30 light:bg-yellow-50 light:text-yellow-700 light:border-yellow-200";
 
   return (
-    <div className="h-[100dvh] bg-gray-950 text-white">
+    <div className="h-[100dvh] bg-gray-950 light:bg-slate-50 text-white light:text-slate-900">
       <Navbar />
 
       <main className="mt-16 h-[calc(100dvh-4rem)] overflow-y-auto custom-scrollbar px-4 py-8 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto space-y-6">
-          <section className="rounded-2xl border border-gray-800 bg-gray-900 p-5 md:p-6">
+          <section className="rounded-2xl border border-gray-800 light:border-slate-200 bg-gray-900 light:bg-white p-5 md:p-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="h-12 w-12 rounded-full bg-blue-600/85 flex items-center justify-center">
@@ -560,7 +560,7 @@ export default function Staff() {
                   <h1 className="text-xl md:text-2xl font-semibold">
                     Staff Chat Console
                   </h1>
-                  <p className="text-sm text-gray-400">
+                  <p className="text-sm text-gray-400 light:text-slate-500">
                     Sender ID: {state.staffId}
                   </p>
                 </div>
@@ -582,7 +582,7 @@ export default function Staff() {
                   type="button"
                   onClick={sendRegisterStaff}
                   disabled={!canRegister}
-                  className="rounded-lg border border-green-500/50 bg-green-600/25 px-3 py-2 text-xs text-green-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-600/40"
+                  className="rounded-lg border border-green-500/50 light:border-green-300 bg-green-600/25 light:bg-green-100 px-3 py-2 text-xs text-green-200 light:text-green-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-600/40 light:hover:bg-green-200"
                 >
                   Register Staff
                 </button>
@@ -590,7 +590,7 @@ export default function Staff() {
                   type="button"
                   onClick={sendUnregisterStaff}
                   disabled={!canUnregister}
-                  className="rounded-lg border border-red-500/50 bg-red-600/20 px-3 py-2 text-xs text-red-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-600/35"
+                  className="rounded-lg border border-red-500/50 light:border-red-300 bg-red-600/20 light:bg-red-100 px-3 py-2 text-xs text-red-200 light:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-600/35 light:hover:bg-red-200"
                 >
                   Unregister Staff
                 </button>
@@ -599,17 +599,17 @@ export default function Staff() {
           </section>
 
           <section className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-            <aside className="lg:col-span-4 rounded-2xl border border-gray-800 bg-gray-900 p-4">
+            <aside className="lg:col-span-4 rounded-2xl border border-gray-800 light:border-slate-200 bg-gray-900 light:bg-white p-4">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-base font-semibold">Assigned Rooms</h2>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-gray-400 light:text-slate-500">
                   {state.roomOrder.length} total
                 </span>
               </div>
 
               <div className="space-y-2 max-h-[32rem] overflow-y-auto custom-scrollbar pr-1">
                 {state.roomOrder.length === 0 ? (
-                  <div className="rounded-lg border border-gray-800 bg-gray-950/60 px-3 py-3 text-sm text-gray-400">
+                  <div className="rounded-lg border border-gray-800 light:border-slate-200 bg-gray-950/60 light:bg-slate-100 px-3 py-3 text-sm text-gray-400 light:text-slate-600">
                     Waiting for room assignments...
                   </div>
                 ) : (
@@ -628,27 +628,27 @@ export default function Staff() {
                         }
                         className={`w-full text-left rounded-xl border px-3 py-3 transition ${
                           isActive
-                            ? "border-blue-500/40 bg-blue-600/15"
-                            : "border-gray-800 bg-gray-950/55 hover:border-gray-700"
+                            ? "border-blue-500/40 bg-blue-600/15 light:border-blue-200 light:bg-blue-50"
+                            : "border-gray-800 bg-gray-950/55 hover:border-gray-700 light:border-slate-200 light:bg-slate-100 light:hover:border-slate-300"
                         }`}
                       >
                         <p className="text-sm font-medium truncate">
                           {room.roomId}
                         </p>
-                        <p className="text-xs text-gray-400 mt-1 truncate">
+                        <p className="text-xs text-gray-400 light:text-slate-500 mt-1 truncate">
                           Guest: {room.guestId}
                         </p>
                         <div className="mt-2 flex items-center justify-between">
                           <span
                             className={`text-[11px] px-2 py-0.5 rounded-full border ${
                               room.status === "open"
-                                ? "bg-green-500/15 text-green-300 border-green-500/30"
-                                : "bg-gray-700/40 text-gray-300 border-gray-600"
+                                ? "bg-green-500/15 text-green-300 border-green-500/30 light:bg-green-50 light:text-green-700 light:border-green-200"
+                                : "bg-gray-700/40 text-gray-300 border-gray-600 light:bg-slate-200 light:text-slate-600 light:border-slate-300"
                             }`}
                           >
                             {room.status}
                           </span>
-                          <span className="text-[11px] text-gray-400">
+                          <span className="text-[11px] text-gray-400 light:text-slate-500">
                             {room.messages.length} messages
                           </span>
                         </div>
@@ -659,41 +659,41 @@ export default function Staff() {
               </div>
             </aside>
 
-            <section className="lg:col-span-8 rounded-2xl border border-gray-800 bg-gray-900 overflow-hidden">
-              <header className="px-4 py-3 border-b border-gray-800 bg-gray-900/90 flex items-center justify-between">
+            <section className="lg:col-span-8 rounded-2xl border border-gray-800 light:border-slate-200 bg-gray-900 light:bg-white overflow-hidden">
+              <header className="px-4 py-3 border-b border-gray-800 light:border-slate-200 bg-gray-900/90 light:bg-white flex items-center justify-between">
                 <div>
                   <p className="text-sm font-semibold">
                     {activeRoom
                       ? `Room: ${activeRoom.roomId}`
                       : "No room selected"}
                   </p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-400 light:text-slate-500">
                     {activeRoom
                       ? `Guest ID: ${activeRoom.guestId}`
                       : "Select a room"}
                   </p>
                   {activeRoom?.status === "open" &&
                   activeRoom?.isGuestTyping ? (
-                    <p className="text-xs text-blue-300 mt-1">
+                    <p className="text-xs text-blue-300 light:text-blue-600 mt-1">
                       User is typing...
                     </p>
                   ) : null}
                 </div>
-                <div className="text-xs text-gray-400">
+                <div className="text-xs text-gray-400 light:text-slate-500">
                   Connection: {state.connectionStatus}
                 </div>
               </header>
 
               <div
                 ref={scrollerRef}
-                className="h-[24rem] overflow-y-auto custom-scrollbar px-3 py-3 space-y-2 bg-gray-950/60"
+                className="h-[24rem] overflow-y-auto custom-scrollbar px-3 py-3 space-y-2 bg-gray-950/60 light:bg-slate-50"
               >
                 {!activeRoom ? (
-                  <div className="rounded-lg border border-gray-800 bg-gray-900/70 px-3 py-2 text-sm text-gray-400">
+                  <div className="rounded-lg border border-gray-800 light:border-slate-200 bg-gray-900/70 light:bg-white px-3 py-2 text-sm text-gray-400 light:text-slate-600">
                     No active room.
                   </div>
                 ) : activeRoom.messages.length === 0 ? (
-                  <div className="rounded-lg border border-gray-800 bg-gray-900/70 px-3 py-2 text-sm text-gray-400">
+                  <div className="rounded-lg border border-gray-800 light:border-slate-200 bg-gray-900/70 light:bg-white px-3 py-2 text-sm text-gray-400 light:text-slate-600">
                     No messages yet.
                   </div>
                 ) : (
@@ -704,11 +704,11 @@ export default function Staff() {
                         key={msg.id}
                         className={`max-w-[82%] rounded-xl border px-3 py-2 ${
                           isMine
-                            ? "ml-auto bg-blue-600/25 border-blue-500/40 text-blue-100"
-                            : "mr-auto bg-gray-800/90 border-gray-700 text-gray-100"
+                            ? "ml-auto bg-blue-600/25 border-blue-500/40 text-blue-100 light:bg-blue-50 light:border-blue-200 light:text-blue-900"
+                            : "mr-auto bg-gray-800/90 border-gray-700 text-gray-100 light:bg-white light:border-slate-200 light:text-slate-900"
                         }`}
                       >
-                        <p className="text-[11px] text-gray-300 mb-1">
+                        <p className="text-[11px] text-gray-300 light:text-slate-500 mb-1">
                           sender_id: {msg.senderId}
                         </p>
                         <p className="text-sm leading-snug">{msg.content}</p>
@@ -718,7 +718,7 @@ export default function Staff() {
                 )}
               </div>
 
-              <footer className="border-t border-gray-800 bg-gray-900 px-3 py-3">
+              <footer className="border-t border-gray-800 light:border-slate-200 bg-gray-900 light:bg-white px-3 py-3">
                 <div className="flex items-center gap-2">
                   <input
                     value={state.composerText}
@@ -734,13 +734,13 @@ export default function Staff() {
                         ? "Room is closed"
                         : "Type a message..."
                     }
-                    className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white placeholder:text-gray-500 outline-none focus:border-blue-500 disabled:opacity-60"
+                    className="w-full rounded-lg border border-gray-700 light:border-slate-300 bg-gray-800 light:bg-white px-3 py-2 text-sm text-white light:text-slate-900 placeholder:text-gray-500 light:placeholder:text-slate-500 outline-none focus:border-blue-500 disabled:opacity-60"
                   />
                   <button
                     type="button"
                     onClick={sendMessage}
                     disabled={!canSend}
-                    className="shrink-0 rounded-lg border border-blue-500/50 bg-blue-600/30 px-3 py-2 text-blue-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-600/45"
+                    className="shrink-0 rounded-lg border border-blue-500/50 light:border-blue-300 bg-blue-600/30 light:bg-blue-100 px-3 py-2 text-blue-200 light:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-600/45 light:hover:bg-blue-200"
                     aria-label="Send message"
                   >
                     <Send size={16} />
@@ -750,14 +750,16 @@ export default function Staff() {
             </section>
           </section>
 
-          <section className="rounded-2xl border border-gray-800 bg-gray-900 p-4">
+          <section className="rounded-2xl border border-gray-800 light:border-slate-200 bg-gray-900 light:bg-white p-4">
             <div className="flex items-center gap-2 mb-2">
-              <MessageCircle className="h-4 w-4 text-blue-400" />
+              <MessageCircle className="h-4 w-4 text-blue-400 light:text-blue-600" />
               <h2 className="text-sm font-semibold">Event Log</h2>
             </div>
             <div className="max-h-28 overflow-y-auto custom-scrollbar space-y-1 pr-1">
               {state.logItems.length === 0 ? (
-                <p className="text-xs text-gray-500">No events yet.</p>
+                <p className="text-xs text-gray-500 light:text-slate-500">
+                  No events yet.
+                </p>
               ) : (
                 state.logItems
                   .slice()
@@ -765,7 +767,7 @@ export default function Staff() {
                   .map((item, index) => (
                     <p
                       key={`${item}-${index}`}
-                      className="text-xs text-gray-400"
+                      className="text-xs text-gray-400 light:text-slate-500"
                     >
                       {item}
                     </p>

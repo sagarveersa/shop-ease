@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant light (&:where(.light, .light *));
+
 html,
 body,
 #root {
@@ -7,6 +10,14 @@ body,
   padding: 0;
   height: 100%;
   overflow: hidden;
+}
+
+html.light {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
 }
 
 .custom-scrollbar::-webkit-scrollbar {

@@ -6,7 +6,7 @@ export default function CheckoutOverlay({ status }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center">
       {status === "loading" && (
-        <div className="bg-white p-10 rounded-xl shadow-lg">
+        <div className="bg-[#0f2038] light:bg-white text-white light:text-slate-900 p-10 rounded-xl shadow-lg">
           <div className="animate-spin w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full" />
           <p className="mt-4 text-center font-medium">Placing your order...</p>
         </div>
@@ -16,7 +16,7 @@ export default function CheckoutOverlay({ status }) {
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="bg-white p-12 rounded-xl shadow-xl flex flex-col items-center"
+          className="bg-[#0f2038] light:bg-white text-white light:text-slate-900 p-12 rounded-xl shadow-xl flex flex-col items-center"
         >
           {/* Green Tick */}
           <motion.div
@@ -28,7 +28,7 @@ export default function CheckoutOverlay({ status }) {
             ✓
           </motion.div>
 
-          <p className="mt-6 text-lg font-semibold text-green-600">
+          <p className="mt-6 text-lg font-semibold text-green-300 light:text-green-600">
             Order Placed Successfully!
           </p>
         </motion.div>

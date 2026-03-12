@@ -394,13 +394,13 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
   return (
     <div className="fixed bottom-5 right-5 z-50">
       {state.isOpen ? (
-        <div className="w-[min(92vw,24rem)] h-[30rem] rounded-2xl border border-gray-800 bg-gray-900 text-white shadow-2xl overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800 bg-gray-900/95">
+        <div className="w-[min(92vw,24rem)] h-[30rem] rounded-2xl border border-gray-800 light:border-slate-200 bg-gray-900 light:bg-white text-white light:text-slate-900 shadow-2xl overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800 light:border-slate-200 bg-gray-900/95 light:bg-white">
             <div>
-              <p className="text-sm font-semibold text-gray-100">
+              <p className="text-sm font-semibold text-gray-100 light:text-slate-900">
                 Live Support
               </p>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-400 light:text-slate-500">
                 {state.connectionState === "connected"
                   ? state.roomId
                     ? "Connected"
@@ -415,7 +415,7 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
             <button
               type="button"
               onClick={() => dispatch({ type: "chat/ui/closed" })}
-              className="rounded-lg border border-gray-700 bg-gray-800 p-1.5 text-gray-300 hover:text-white hover:border-gray-600"
+              className="rounded-lg border border-gray-700 light:border-slate-300 bg-gray-800 light:bg-slate-100 p-1.5 text-gray-300 light:text-slate-600 hover:text-white light:hover:text-slate-900 hover:border-gray-600 light:hover:border-slate-400"
               aria-label="Close chat"
             >
               <X size={16} />
@@ -424,10 +424,10 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
 
           <div
             ref={scrollerRef}
-            className="h-[calc(100%-7.5rem)] overflow-y-auto custom-scrollbar px-3 py-3 space-y-2 bg-gray-950/60"
+            className="h-[calc(100%-7.5rem)] overflow-y-auto custom-scrollbar px-3 py-3 space-y-2 bg-gray-950/60 light:bg-slate-50"
           >
             {!state.roomId ? (
-              <div className="rounded-lg border border-gray-800 bg-gray-900/80 px-3 py-2 text-sm text-gray-300 space-y-3">
+              <div className="rounded-lg border border-gray-800 light:border-slate-200 bg-gray-900/80 light:bg-white px-3 py-2 text-sm text-gray-300 light:text-slate-600 space-y-3">
                 <p>
                   {state.isWaitingForStaff
                     ? "Waiting for the staff..."
@@ -439,13 +439,13 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
                   type="button"
                   onClick={sendStartGuestRoom}
                   disabled={!canStartChat}
-                  className="rounded-lg border border-blue-500/50 bg-blue-600/30 px-3 py-1.5 text-blue-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-600/45"
+                  className="rounded-lg border border-blue-500/50 light:border-blue-300 bg-blue-600/30 light:bg-blue-100 px-3 py-1.5 text-blue-200 light:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-600/45 light:hover:bg-blue-200"
                 >
                   {state.isStartingRoom ? "Starting..." : "Start Chat"}
                 </button>
               </div>
             ) : state.messages.length === 0 ? (
-              <div className="rounded-lg border border-gray-800 bg-gray-900/80 px-3 py-2 text-sm text-gray-400">
+              <div className="rounded-lg border border-gray-800 light:border-slate-200 bg-gray-900/80 light:bg-white px-3 py-2 text-sm text-gray-400 light:text-slate-600">
                 Start chatting with support.
               </div>
             ) : (
@@ -454,12 +454,12 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
                   key={msg.id}
                   className={`max-w-[85%] rounded-xl px-3 py-2 text-sm border ${
                     msg.role === "me"
-                      ? "ml-auto bg-blue-600/25 border-blue-500/40 text-blue-100"
+                      ? "ml-auto bg-blue-600/25 border-blue-500/40 text-blue-100 light:bg-blue-50 light:border-blue-200 light:text-blue-900"
                       : msg.role === "system"
                         ? msg.isError
-                          ? "mx-auto bg-red-500/10 border-red-500/30 text-red-200"
-                          : "mx-auto bg-gray-800/80 border-gray-700 text-gray-200"
-                        : "mr-auto bg-gray-800/85 border-gray-700 text-gray-100"
+                          ? "mx-auto bg-red-500/10 border-red-500/30 text-red-200 light:bg-red-50 light:border-red-200 light:text-red-700"
+                          : "mx-auto bg-gray-800/80 border-gray-700 text-gray-200 light:bg-slate-100 light:border-slate-200 light:text-slate-700"
+                        : "mr-auto bg-gray-800/85 border-gray-700 text-gray-100 light:bg-white light:border-slate-200 light:text-slate-900"
                   }`}
                 >
                   {msg.content}
@@ -467,13 +467,13 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
               ))
             )}
             {state.roomId && state.isStaffTyping ? (
-              <div className="mr-auto inline-block rounded-lg border border-gray-700 bg-gray-800/85 px-3 py-1.5 text-xs text-gray-300">
+              <div className="mr-auto inline-block rounded-lg border border-gray-700 light:border-slate-300 bg-gray-800/85 light:bg-white px-3 py-1.5 text-xs text-gray-300 light:text-slate-600">
                 Staff is typing...
               </div>
             ) : null}
           </div>
 
-          <div className="px-3 py-3 border-t border-gray-800 bg-gray-900">
+          <div className="px-3 py-3 border-t border-gray-800 light:border-slate-200 bg-gray-900 light:bg-white">
             <div className="flex items-center gap-2">
               <input
                 value={state.inputValue}
@@ -485,13 +485,13 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
                 placeholder={
                   state.roomId ? "Type a message..." : "Waiting for room..."
                 }
-                className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white placeholder:text-gray-500 outline-none focus:border-blue-500"
+                className="w-full rounded-lg border border-gray-700 light:border-slate-300 bg-gray-800 light:bg-white px-3 py-2 text-sm text-white light:text-slate-900 placeholder:text-gray-500 light:placeholder:text-slate-500 outline-none focus:border-blue-500"
               />
               <button
                 type="button"
                 onClick={sendMessage}
                 disabled={!canSend}
-                className="shrink-0 rounded-lg border border-blue-500/50 bg-blue-600/30 px-3 py-2 text-blue-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-600/45"
+                className="shrink-0 rounded-lg border border-blue-500/50 light:border-blue-300 bg-blue-600/30 light:bg-blue-100 px-3 py-2 text-blue-200 light:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-600/45 light:hover:bg-blue-200"
                 aria-label="Send message"
               >
                 <Send size={16} />
