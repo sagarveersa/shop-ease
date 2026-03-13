@@ -131,7 +131,7 @@ export function Products() {
             </div>
 
             {loading && !productsError && (
-              <div className="absolute inset-0 flex justify-center items-center">
+              <div className="relative sm:absolute sm:inset-0 min-h-[40vh] sm:min-h-0 flex justify-center items-center">
                 <LoadingSpinner />
               </div>
             )}
