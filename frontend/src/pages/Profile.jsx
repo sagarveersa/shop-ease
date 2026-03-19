@@ -21,10 +21,10 @@ const initialState = {
 
 function profileReducer(state, action) {
   switch (action.type) {
-    case "profile/fetch/request":
+    case "profile/fetch-request":
       return { ...state, status: "loading", error: null };
 
-    case "profile/fetch/success":
+    case "profile/fetch-success":
       return {
         ...state,
         status: "success",
@@ -36,13 +36,13 @@ function profileReducer(state, action) {
         },
       };
 
-    case "profile/fetch/failure":
+    case "profile/fetch-failure":
       return { ...state, status: "error", error: action.payload };
 
-    case "profile/edit/start":
+    case "profile/edit-start":
       return { ...state, isEditing: true, saveError: null };
 
-    case "profile/edit/cancel":
+    case "profile/edit-cancel":
       return {
         ...state,
         isEditing: false,
@@ -53,7 +53,7 @@ function profileReducer(state, action) {
         },
       };
 
-    case "profile/form/update":
+    case "profile/form-update":
       return {
         ...state,
         form: {
@@ -62,10 +62,10 @@ function profileReducer(state, action) {
         },
       };
 
-    case "profile/save/request":
+    case "profile/save-request":
       return { ...state, saveStatus: "loading", saveError: null };
 
-    case "profile/save/success":
+    case "profile/save-success":
       return {
         ...state,
         saveStatus: "success",
@@ -78,7 +78,7 @@ function profileReducer(state, action) {
         },
       };
 
-    case "profile/save/failure":
+    case "profile/save-failure":
       return {
         ...state,
         saveStatus: "error",
@@ -113,17 +113,17 @@ export default function Profile() {
     const controller = new AbortController();
 
     async function loadProfile() {
-      dispatch({ type: "profile/fetch/request" });
+      dispatch({ type: "profile/fetch-request" });
       try {
         const response = await api.get("accounts/profile/", {
           signal: controller.signal,
         });
-        dispatch({ type: "profile/fetch/success", payload: response.data });
+        dispatch({ type: "profile/fetch-success", payload: response.data });
       } catch (error) {
         if (error.name === "CanceledError") return;
 
         dispatch({
-          type: "profile/fetch/failure",
+          type: "profile/fetch-failure",
           payload:
             error?.response?.data?.detail ||
             error?.response?.data?.details ||
@@ -151,7 +151,7 @@ export default function Profile() {
 
   const onChange = (field, value) => {
     dispatch({
-      type: "profile/form/update",
+      type: "profile/form-update",
       payload: { field, value },
     });
   };
@@ -162,7 +162,7 @@ export default function Profile() {
       return;
     }
 
-    dispatch({ type: "profile/save/request" });
+    dispatch({ type: "profile/save-request" });
 
     try {
       const payload = {
@@ -170,13 +170,13 @@ export default function Profile() {
       };
       const response = await api.patch("accounts/profile/", payload);
 
-      dispatch({ type: "profile/save/success", payload: response.data });
+      dispatch({ type: "profile/save-success", payload: response.data });
       setName(response.data.name || "Unnamed");
       localStorage.setItem("name", response.data.name || "Unnamed");
       toast.success("Profile updated");
     } catch (error) {
       dispatch({
-        type: "profile/save/failure",
+        type: "profile/save-failure",
         payload:
           error?.response?.data?.detail ||
           error?.response?.data?.details ||
@@ -286,7 +286,7 @@ export default function Profile() {
                 <div className="mt-6 flex flex-wrap gap-3">
                   {!state.isEditing && !isAuth0Account ? (
                     <button
-                      onClick={() => dispatch({ type: "profile/edit/start" })}
+                      onClick={() => dispatch({ type: "profile/edit-start" })}
                       className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition"
                     >
                       Edit Profile
@@ -301,7 +301,7 @@ export default function Profile() {
                         {state.saveStatus === "loading" ? "Saving..." : "Save"}
                       </button>
                       <button
-                        onClick={() => dispatch({ type: "profile/edit/cancel" })}
+                        onClick={() => dispatch({ type: "profile/edit-cancel" })}
                         disabled={state.saveStatus === "loading"}
                         className="rounded-lg border border-gray-700 light:border-slate-300 bg-gray-800 light:bg-white px-4 py-2 text-sm font-medium text-gray-200 light:text-slate-700 hover:bg-gray-700 light:hover:bg-slate-100 disabled:opacity-60 transition"
                       >

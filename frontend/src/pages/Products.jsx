@@ -26,7 +26,8 @@ function reducer(state, action) {
       if (queryParam) {
         return { ...state, filter: { ...state.filter, query: queryParam } };
       }
-      const { query, ...rest } = state.filter;
+      const rest = { ...state.filter };
+      delete rest.query;
       return { ...state, filter: rest };
     }
     case "loading":
@@ -62,7 +63,6 @@ export function Products() {
   useEffect(() => {
     const fetchProducts = async () => {
       dispatch({ type: "loading" });
-      console.log("[Products]", filter);
       const response = await ProductService.getProducts(filter);
       if (!response.success) {
         dispatch({ type: "error", payload: response.data.error });
@@ -88,6 +88,13 @@ export function Products() {
       dispatch({ type: "error/clear" });
     }
   }, [productsError]);
+
+  const selectedSortLabel =
+    filter.sort === "ascending"
+      ? "Price: Low to High"
+      : filter.sort === "descending"
+        ? "Price: High to Low"
+        : "Featured";
 
   return (
     <div className="bg-[#0b172a] light:bg-slate-50 h-[100dvh] flex flex-col overflow-hidden text-white light:text-slate-900">
@@ -126,7 +133,9 @@ export function Products() {
                 >
                   Filters
                 </button>
-                <div className="text-xs text-gray-400 light:text-slate-500">Sort: Featured</div>
+                <div className="text-xs text-gray-400 light:text-slate-500">
+                  Sort: {selectedSortLabel}
+                </div>
               </div>
             </div>
 

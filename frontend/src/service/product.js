@@ -6,10 +6,10 @@ export const ProductService = {
     if (filter.query) {
       params.search = filter.query;
     }
-    if (filter.allowedCategories) {
+    if (filter.allowedCategories?.length) {
       params.category = filter.allowedCategories;
     }
-    if (filter.sort) {
+    if (filter.sort && filter.sort !== "default") {
       params.ordering = filter.sort === "ascending" ? "price" : "-price";
     }
 
@@ -21,7 +21,7 @@ export const ProductService = {
           // convert category[] to repeated query params
           const parts = [];
           for (const key in params) {
-            if (!params.hasOwnProperty(key)) continue;
+            if (!Object.prototype.hasOwnProperty.call(params, key)) continue;
             const value = params[key];
             if (Array.isArray(value)) {
               parts.push(

@@ -1,11 +1,12 @@
 import { useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { authContext } from "../context/AuthContext";
 import { cartContext } from "../context/CartContext";
 
 export default function ProductCard({ product }) {
   const { loggedIn } = useContext(authContext);
   const { cart, addToCart } = useContext(cartContext);
+  const location = useLocation();
   const inCart = loggedIn && cart && product && cart[product.id];
   const categoryLabel = Array.isArray(product.categories)
     ? product.categories.join(", ")
@@ -14,7 +15,10 @@ export default function ProductCard({ product }) {
   return (
     // <Link to={`/product/${product.id}`} className="group">
     <div className="h-full flex flex-col bg-transparent group">
-      <Link to={`/product/${product.id}`}>
+      <Link
+        to={`/product/${product.id}`}
+        state={{ from: `${location.pathname}${location.search}` }}
+      >
         {/* Image */}
         <div className="relative w-full aspect-square bg-gray-100 light:bg-slate-100 rounded-md overflow-hidden">
           <img

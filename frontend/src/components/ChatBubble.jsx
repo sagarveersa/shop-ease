@@ -1,6 +1,7 @@
 import { MessageCircle, Send, X } from "lucide-react";
-import { useEffect, useMemo, useReducer, useRef } from "react";
+import { useContext, useEffect, useMemo, useReducer, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { authContext } from "../context/AuthContext";
 
 const WS_ENDPOINT =
   import.meta.env.VITE_CHAT_API_URL ||
@@ -16,6 +17,7 @@ const initialState = {
   isWaitingForStaff: false,
   isStartingRoom: false,
   roomClosedByStaff: false,
+  assignedStaffName: null,
 };
 
 function buildMessage(role, content, extra = {}) {
@@ -29,22 +31,13 @@ function buildMessage(role, content, extra = {}) {
 
 function reducer(state, action) {
   switch (action.type) {
-    case "chat/ui/opened":
-      return {
-        ...state,
-        isOpen: true,
-      };
-    case "chat/ui/closed":
-      return {
-        ...state,
-        isOpen: false,
-      };
-    case "chat/socket/connected":
-      return {
-        ...state,
-        connectionState: "connected",
-      };
-    case "chat/socket/error":
+    case "chat/ui-opened":
+      return { ...state, isOpen: true };
+    case "chat/ui-closed":
+      return { ...state, isOpen: false };
+    case "chat/socket-connected":
+      return { ...state, connectionState: "connected" };
+    case "chat/socket-error":
       return {
         ...state,
         connectionState: "error",
@@ -56,70 +49,70 @@ function reducer(state, action) {
           }),
         ],
       };
-    case "chat/socket/closed":
-      return {
-        ...state,
-        connectionState: "closed",
-        isStartingRoom: false,
-      };
-    case "chat/room-start/pending":
-      return {
-        ...state,
-        isStartingRoom: true,
-        roomClosedByStaff: false,
-      };
-    case "chat/room/created":
+    case "chat/socket-closed":
+      return { ...state, connectionState: "closed", isStartingRoom: false };
+    case "chat/room-start-pending":
+      return { ...state, isStartingRoom: true, roomClosedByStaff: false };
+    case "chat/room-created":
       return {
         ...state,
         isStartingRoom: false,
-        isWaitingForStaff: false,
         isStaffTyping: false,
         roomClosedByStaff: false,
-        roomId: action.payload || "",
-        messages: [
-          ...state.messages,
-          buildMessage("system", "Connected to support room."),
-        ],
+        roomId: action.payload.roomId || state.roomId,
+        assignedStaffName:
+          action.payload.staffName || state.assignedStaffName || null,
+        messages: state.roomId
+          ? state.messages
+          : [...state.messages, buildMessage("system", "Connected to support room.")],
       };
-    case "chat/staff/waiting":
+    case "chat/room-assigned": {
+      const staffName = action.payload.staffName || "Support staff";
+      const alreadyAssigned = state.assignedStaffName === staffName;
+      return {
+        ...state,
+        roomId: action.payload.roomId || state.roomId,
+        isStartingRoom: false,
+        isWaitingForStaff: false,
+        roomClosedByStaff: false,
+        assignedStaffName: staffName,
+        messages: alreadyAssigned
+          ? state.messages
+          : [...state.messages, buildMessage("system", `${staffName} joined the chat.`)],
+      };
+    }
+    case "chat/staff-waiting":
       return {
         ...state,
         isStartingRoom: false,
         isWaitingForStaff: true,
         messages: [
           ...state.messages,
-          buildMessage("system", "Waiting for the staff..."),
+          buildMessage(
+            "system",
+            "No staff is online right now. Send your message and we'll get back to you.",
+          ),
         ],
       };
-    case "chat/staff/available":
+    case "chat/room-staff-closed":
       return {
         ...state,
         isStartingRoom: false,
-        isWaitingForStaff: false,
-        messages: [
-          ...state.messages,
-          buildMessage("system", "A staff member is available. Starting chat..."),
-        ],
-      };
-    case "chat/room/staff-closed":
-      return {
-        ...state,
-        isStartingRoom: false,
-        isWaitingForStaff: false,
+        isWaitingForStaff: true,
         isStaffTyping: false,
-        roomId: "",
         roomClosedByStaff: true,
+        assignedStaffName: null,
         messages: [
           ...state.messages,
-          buildMessage("system", "Staff has closed the room."),
+          buildMessage(
+            "system",
+            "The staff stepped away. You can keep messaging and we'll get back to you.",
+          ),
         ],
       };
-    case "chat/staff-typing/toggled":
-      return {
-        ...state,
-        isStaffTyping: !state.isStaffTyping,
-      };
-    case "chat/system/error":
+    case "chat/staff-typing-toggled":
+      return { ...state, isStaffTyping: !state.isStaffTyping };
+    case "chat/system-error":
       return {
         ...state,
         isStartingRoom: false,
@@ -130,7 +123,7 @@ function reducer(state, action) {
           }),
         ],
       };
-    case "chat/message/received": {
+    case "chat/message-received": {
       const { senderId, content, guestId } = action.payload;
       if (!content) return state;
       return {
@@ -143,16 +136,10 @@ function reducer(state, action) {
         ],
       };
     }
-    case "chat/input/updated":
-      return {
-        ...state,
-        inputValue: action.payload,
-      };
-    case "chat/input/cleared":
-      return {
-        ...state,
-        inputValue: "",
-      };
+    case "chat/input-updated":
+      return { ...state, inputValue: action.payload };
+    case "chat/input-cleared":
+      return { ...state, inputValue: "" };
     default:
       return state;
   }
@@ -163,8 +150,6 @@ function safeParseMessage(raw) {
 
   try {
     const parsed = JSON.parse(raw);
-
-    // Some backends may double-encode payloads as JSON strings.
     if (typeof parsed === "string") {
       try {
         return JSON.parse(parsed);
@@ -172,7 +157,6 @@ function safeParseMessage(raw) {
         return null;
       }
     }
-
     return parsed;
   } catch {
     return null;
@@ -181,7 +165,7 @@ function safeParseMessage(raw) {
 
 export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
   const guestId = useMemo(() => uuidv4(), []);
-
+  const { loggedIn, name } = useContext(authContext);
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const socketRef = useRef(null);
@@ -190,22 +174,25 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
   const hasTypingStartedRef = useRef(false);
   const localTypingToggleEchoCountRef = useRef(0);
   const roomIdRef = useRef("");
+  const guestName = loggedIn && name ? name : "Guest user";
 
-  const sendStartGuestRoom = (force = false) => {
+  const sendStartGuestRoom = () => {
     if (
       !socketRef.current ||
       state.connectionState !== "connected" ||
-      (!force && state.isStartingRoom)
+      state.isStartingRoom ||
+      state.roomId
     ) {
       return;
     }
 
-    dispatch({ type: "chat/room-start/pending" });
+    dispatch({ type: "chat/room-start-pending" });
     socketRef.current.send(
       JSON.stringify({
         type: "StartGuestRoom",
         data: {
           guest_id: guestId,
+          guest_name: guestName,
         },
       }),
     );
@@ -219,6 +206,7 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
     ) {
       return;
     }
+
     localTypingToggleEchoCountRef.current += 1;
     socketRef.current.send(
       JSON.stringify({
@@ -238,11 +226,10 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
 
   useEffect(() => {
     const socket = new WebSocket(endpoint);
-    console.log(`sending ws request to ${endpoint}`);
     socketRef.current = socket;
 
     socket.onopen = () => {
-      dispatch({ type: "chat/socket/connected" });
+      dispatch({ type: "chat/socket-connected" });
     };
 
     socket.onmessage = (event) => {
@@ -253,35 +240,35 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
         hasTypingStartedRef.current = false;
         localTypingToggleEchoCountRef.current = 0;
         dispatch({
-          type: "chat/room/created",
-          payload: payload?.data?.room_id || "",
+          type: "chat/room-created",
+          payload: {
+            roomId: payload?.data?.room_id || "",
+            staffName: payload?.data?.staff_name || null,
+          },
+        });
+        return;
+      }
+
+      if (payload.type === "RoomAssigned") {
+        dispatch({
+          type: "chat/room-assigned",
+          payload: {
+            roomId: payload?.data?.room_id || "",
+            staffName: payload?.data?.staff_name || "Support staff",
+          },
         });
         return;
       }
 
       if (payload.type === "StaffNotAvailable") {
-        dispatch({ type: "chat/staff/waiting" });
-        return;
-      }
-
-      if (payload.type === "StaffAvailable") {
-        dispatch({ type: "chat/staff/available" });
-        dispatch({ type: "chat/room-start/pending" });
-        socket.send(
-          JSON.stringify({
-            type: "StartGuestRoom",
-            data: {
-              guest_id: guestId,
-            },
-          }),
-        );
+        dispatch({ type: "chat/staff-waiting" });
         return;
       }
 
       if (payload.type === "StaffLeftRoom") {
         clearTimeout(typingTimeoutRef.current);
         hasTypingStartedRef.current = false;
-        dispatch({ type: "chat/room/staff-closed" });
+        dispatch({ type: "chat/room-staff-closed" });
         return;
       }
 
@@ -292,13 +279,13 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
           localTypingToggleEchoCountRef.current -= 1;
           return;
         }
-        dispatch({ type: "chat/staff-typing/toggled" });
+        dispatch({ type: "chat/staff-typing-toggled" });
         return;
       }
 
       if (payload.type === "Error") {
         dispatch({
-          type: "chat/system/error",
+          type: "chat/system-error",
           payload: payload?.data?.details || "An error occurred.",
         });
         return;
@@ -306,7 +293,7 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
 
       if (payload.type === "RoomMessage") {
         dispatch({
-          type: "chat/message/received",
+          type: "chat/message-received",
           payload: {
             senderId: payload?.data?.sender_id || "",
             content: payload?.data?.content || "",
@@ -317,18 +304,18 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
     };
 
     socket.onerror = () => {
-      dispatch({ type: "chat/socket/error" });
+      dispatch({ type: "chat/socket-error" });
     };
 
     socket.onclose = () => {
-      dispatch({ type: "chat/socket/closed" });
+      dispatch({ type: "chat/socket-closed" });
     };
 
     return () => {
       clearTimeout(typingTimeoutRef.current);
       socket.close();
     };
-  }, [endpoint, guestId]);
+  }, [endpoint, guestId, guestName]);
 
   useEffect(() => {
     if (!scrollerRef.current) return;
@@ -345,7 +332,9 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
     state.roomId;
 
   const canStartChat =
-    state.connectionState === "connected" && !state.isStartingRoom;
+    state.connectionState === "connected" &&
+    !state.isStartingRoom &&
+    !state.roomId;
 
   const sendMessage = () => {
     if (!canSend) return;
@@ -363,12 +352,12 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
 
     stopTypingIfNeeded();
     clearTimeout(typingTimeoutRef.current);
-    dispatch({ type: "chat/input/cleared" });
+    dispatch({ type: "chat/input-cleared" });
   };
 
   const handleInputChange = (nextValue) => {
     dispatch({
-      type: "chat/input/updated",
+      type: "chat/input-updated",
       payload: nextValue,
     });
 
@@ -391,6 +380,19 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
     }, 2000);
   };
 
+  const statusLabel =
+    state.connectionState === "connected"
+      ? state.assignedStaffName
+        ? `Connected with ${state.assignedStaffName}`
+        : state.roomId
+          ? state.isWaitingForStaff
+            ? "We'll get back to you soon"
+            : "Chat room ready"
+          : "Ready to start"
+      : state.connectionState === "connecting"
+        ? "Connecting..."
+        : "Offline";
+
   return (
     <div className="fixed bottom-5 right-5 z-50">
       {state.isOpen ? (
@@ -401,20 +403,12 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
                 Live Support
               </p>
               <p className="text-xs text-gray-400 light:text-slate-500">
-                {state.connectionState === "connected"
-                  ? state.roomId
-                    ? "Connected"
-                    : state.isWaitingForStaff
-                      ? "Waiting for staff..."
-                      : "Ready to start"
-                  : state.connectionState === "connecting"
-                    ? "Connecting..."
-                    : "Offline"}
+                {statusLabel}
               </p>
             </div>
             <button
               type="button"
-              onClick={() => dispatch({ type: "chat/ui/closed" })}
+              onClick={() => dispatch({ type: "chat/ui-closed" })}
               className="rounded-lg border border-gray-700 light:border-slate-300 bg-gray-800 light:bg-slate-100 p-1.5 text-gray-300 light:text-slate-600 hover:text-white light:hover:text-slate-900 hover:border-gray-600 light:hover:border-slate-400"
               aria-label="Close chat"
             >
@@ -426,14 +420,18 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
             ref={scrollerRef}
             className="h-[calc(100%-7.5rem)] overflow-y-auto custom-scrollbar px-3 py-3 space-y-2 bg-gray-950/60 light:bg-slate-50"
           >
+            {state.assignedStaffName ? (
+              <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-200 light:border-emerald-200 light:bg-emerald-50 light:text-emerald-700">
+                You are chatting with {state.assignedStaffName}.
+              </div>
+            ) : null}
+
             {!state.roomId ? (
               <div className="rounded-lg border border-gray-800 light:border-slate-200 bg-gray-900/80 light:bg-white px-3 py-2 text-sm text-gray-300 light:text-slate-600 space-y-3">
                 <p>
-                  {state.isWaitingForStaff
-                    ? "Waiting for the staff..."
-                    : state.roomClosedByStaff
-                      ? "The room was closed by staff."
-                      : "Start chatting with support."}
+                  {state.roomClosedByStaff
+                    ? "The room was closed by staff."
+                    : "Start chatting with support."}
                 </p>
                 <button
                   type="button"
@@ -446,7 +444,9 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
               </div>
             ) : state.messages.length === 0 ? (
               <div className="rounded-lg border border-gray-800 light:border-slate-200 bg-gray-900/80 light:bg-white px-3 py-2 text-sm text-gray-400 light:text-slate-600">
-                Start chatting with support.
+                {state.isWaitingForStaff
+                  ? "Leave the first message and we'll get back to you."
+                  : "Start chatting with support."}
               </div>
             ) : (
               state.messages.map((msg) => (
@@ -466,9 +466,10 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
                 </div>
               ))
             )}
+
             {state.roomId && state.isStaffTyping ? (
               <div className="mr-auto inline-block rounded-lg border border-gray-700 light:border-slate-300 bg-gray-800/85 light:bg-white px-3 py-1.5 text-xs text-gray-300 light:text-slate-600">
-                Staff is typing...
+                {(state.assignedStaffName || "Support staff")} is typing...
               </div>
             ) : null}
           </div>
@@ -483,7 +484,11 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
                 }}
                 disabled={!state.roomId}
                 placeholder={
-                  state.roomId ? "Type a message..." : "Waiting for room..."
+                  state.roomId
+                    ? state.isWaitingForStaff
+                      ? "Leave a message..."
+                      : "Type a message..."
+                    : "Start a room to begin"
                 }
                 className="w-full rounded-lg border border-gray-700 light:border-slate-300 bg-gray-800 light:bg-white px-3 py-2 text-sm text-white light:text-slate-900 placeholder:text-gray-500 light:placeholder:text-slate-500 outline-none focus:border-blue-500"
               />
@@ -504,7 +509,7 @@ export default function ChatBubble({ endpoint = WS_ENDPOINT }) {
       {!state.isOpen ? (
         <button
           type="button"
-          onClick={() => dispatch({ type: "chat/ui/opened" })}
+          onClick={() => dispatch({ type: "chat/ui-opened" })}
           className="ml-auto flex h-14 w-14 items-center justify-center rounded-full border border-blue-500/40 bg-blue-600/80 text-white shadow-lg hover:bg-blue-500"
           aria-label="Open chat"
         >

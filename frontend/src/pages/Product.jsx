@@ -1,5 +1,6 @@
-import { useContext, useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import { useContext, useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { Navbar } from "../components/Navbar";
@@ -13,11 +14,16 @@ export default function Product() {
   const { cart, addToCart } = useContext(cartContext);
   const { loggedIn } = useContext(authContext);
   const { id } = useParams();
+  const location = useLocation();
   const [product, setProduct] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const { setCheckoutItems } = useContext(checkoutContext);
   const navigate = useNavigate();
+  const browsePath = useMemo(
+    () => location.state?.from || "/products",
+    [location.state],
+  );
 
   const inCart = loggedIn && cart && product && cart[product.id];
 
@@ -30,11 +36,9 @@ export default function Product() {
       if (!response.success) {
         setError(response.data.error);
       } else {
-        console.log("Product", response.data);
         setProduct(response.data);
         setError(null);
 
-        console.log("tracking view product");
         trackEvent("View Product", {
           product_id: response.data.id,
           product_name: response.data.name,
@@ -76,11 +80,22 @@ export default function Product() {
         <div className="w-full p-6">
           {product ? (
             <div className="max-w-6xl mx-auto">
-              <div className="text-xs text-gray-400 light:text-slate-500 mb-4">
-                Store / Products /{" "}
-                <span className="text-gray-200 light:text-slate-700">
-                  {product.name}
-                </span>
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() => navigate(browsePath)}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 light:border-slate-200 bg-[#0f2038] light:bg-white px-4 py-2 text-sm font-medium text-gray-200 light:text-slate-700 transition hover:border-blue-400/50 hover:text-white light:hover:text-slate-900"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Browse
+                </button>
+
+                <div className="text-xs text-gray-400 light:text-slate-500">
+                  Store / Products /{" "}
+                  <span className="text-gray-200 light:text-slate-700">
+                    {product.name}
+                  </span>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1.4fr_0.8fr] gap-6">
@@ -233,8 +248,16 @@ export default function Product() {
               </div>
             </div>
           ) : (
-            <div className="text-gray-300 light:text-slate-600">
-              Product not found.
+            <div className="space-y-4 text-gray-300 light:text-slate-600">
+              <div>Product not found.</div>
+              <button
+                type="button"
+                onClick={() => navigate(browsePath)}
+                className="inline-flex items-center gap-2 rounded-full border border-white/10 light:border-slate-200 bg-[#0f2038] light:bg-white px-4 py-2 text-sm font-medium text-gray-200 light:text-slate-700 transition hover:border-blue-400/50 hover:text-white light:hover:text-slate-900"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Browse
+              </button>
             </div>
           )}
         </div>

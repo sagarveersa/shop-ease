@@ -12,21 +12,12 @@ const initialState = {
   password: "",
   loading: false,
   error: null,
-  mode: "customer",
 };
 
 function loginReducer(state, action) {
   switch (action.type) {
-    case "login/form/update":
+    case "login/form-update":
       return { ...state, [action.payload.field]: action.payload.value };
-
-    case "login/mode/update":
-      return {
-        ...state,
-        mode: action.payload,
-        error: null,
-        loading: false,
-      };
 
     case "login/request":
       return { ...state, loading: true, error: null };
@@ -98,11 +89,7 @@ export default function Login() {
     dispatch({ type: "login/request" });
 
     try {
-      const endpoint =
-        useAuth0 && state.mode === "staff"
-          ? "accounts/staff/login/"
-          : "accounts/login/";
-      const response = await axios.post(`${baseURL}${endpoint}`, {
+      const response = await axios.post(`${baseURL}accounts/login/`, {
         email: state.email,
         password: state.password,
       });
@@ -148,7 +135,7 @@ export default function Login() {
     });
   };
 
-  const showAuth0Button = useAuth0 && state.mode === "customer";
+  const showAuth0Button = useAuth0;
 
   return (
     <div className="bg-gray-950 light:bg-slate-50 h-full overflow-y-auto">
@@ -166,42 +153,7 @@ export default function Login() {
               </p>
             </div>
 
-            {useAuth0 ? (
-              <div className="mb-5 rounded-lg border border-gray-700 light:border-slate-200 p-1 grid grid-cols-2 gap-1">
-                <button
-                  onClick={() =>
-                    dispatch({ type: "login/mode/update", payload: "customer" })
-                  }
-                  className={`rounded-md py-2 text-sm font-medium transition ${
-                    state.mode === "customer"
-                      ? "bg-blue-600 text-white"
-                      : "text-gray-300 light:text-slate-600 hover:bg-gray-800 light:hover:bg-slate-100"
-                  }`}
-                >
-                  Customer
-                </button>
-                <button
-                  onClick={() =>
-                    dispatch({ type: "login/mode/update", payload: "staff" })
-                  }
-                  className={`rounded-md py-2 text-sm font-medium transition ${
-                    state.mode === "staff"
-                      ? "bg-emerald-600 text-white"
-                      : "text-gray-300 light:text-slate-600 hover:bg-gray-800 light:hover:bg-slate-100"
-                  }`}
-                >
-                  Staff
-                </button>
-              </div>
-            ) : null}
-
             <div className="space-y-5">
-              {useAuth0 && state.mode === "staff" ? (
-                <p className="text-xs text-gray-400 light:text-slate-500">
-                  Staff accounts can log in directly without Auth0 registration.
-                </p>
-              ) : null}
-
               <div>
                 <label
                   htmlFor="email"
@@ -217,7 +169,7 @@ export default function Login() {
                   value={state.email}
                   onChange={(e) =>
                     dispatch({
-                      type: "login/form/update",
+                      type: "login/form-update",
                       payload: { field: "email", value: e.target.value },
                     })
                   }
@@ -240,7 +192,7 @@ export default function Login() {
                   value={state.password}
                   onChange={(e) =>
                     dispatch({
-                      type: "login/form/update",
+                      type: "login/form-update",
                       payload: { field: "password", value: e.target.value },
                     })
                   }

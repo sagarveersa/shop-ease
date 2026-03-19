@@ -3,86 +3,83 @@ from fastapi import WebSocket
 from websocket.pool import Pool
 from jwt import decode_token
 from sqlalchemy.orm import Session
-from models import ChatRoom, ChatStatus
-from uuid import UUID
+from models import ChatRoom
 import schemas
 
 
 async def register_staff_handler(ws: WebSocket, pool: Pool, msg: WsMessage):
     token = msg.data.token
     payload = decode_token(token)
-    if not payload or not payload.get('is_staff'):
+    if not payload or not payload.get("is_staff"):
         error_msg = ErrorResponse(type="Error", data=ErrorPayload(details="Unauthorized"))
         await ws.send_json(error_msg.model_dump_json())
-        return 
-    
-    staff_id = payload.get('user_id')
-    await pool.register_staff(staff_id)
+        return
+
+    staff_id = payload.get("user_id")
+    staff_name = payload.get("name") or "Support staff"
     pool.connect(staff_id, ws)
+    await pool.register_staff(staff_id, staff_name)
 
-    success_msg = SuccessResponse(type="Success", data=SuccessPayload(details='Staff registered'))
-
+    success_msg = SuccessResponse(type="Success", data=SuccessPayload(details="Staff registered"))
     await ws.send_json(success_msg.model_dump_json())
-    return
+
 
 async def unregister_staff_handler(ws: WebSocket, pool: Pool, msg: WsMessage):
     token = msg.data.token
     payload = decode_token(token)
-    if not payload or not payload.get('is_staff'):
+    if not payload or not payload.get("is_staff"):
         error_msg = ErrorResponse(type="Error", data=ErrorPayload(details="Unauthorized"))
         await ws.send_json(error_msg.model_dump_json())
-        return 
+        return
 
-    staff_id = payload.get('user_id')
+    staff_id = payload.get("user_id")
     await pool.unregister_staff(staff_id, ws)
 
 
 async def start_guest_room_handler(ws: WebSocket, pool: Pool, msg: WsMessage, db: Session):
-
+    guest_id = msg.data.guest_id
+    guest_name = msg.data.guest_name or "Guest user"
     staff_id = pool.get_staff()
+
+    room = ChatRoom(guest_id=guest_id, staff_id=staff_id)
+    db.add(room)
+    db.commit()
+    db.refresh(room)
+
+    pool.add_room(room.id, guest_id, guest_name, ws)
+
+    response = schemas.RoomCreatedResponse(
+        type="RoomCreated",
+        data=schemas.RoomCreatedPayload(
+            room_id=room.id,
+            staff_id=staff_id,
+            staff_name=pool.get_staff_name(staff_id),
+        ),
+    )
+    await ws.send_json(response.model_dump_json())
+
     if staff_id is None:
         print("No staff is available please wait...")
-        response = schemas.StaffNotAvailableEvent(type="StaffNotAvailable")
-        await ws.send_json(response.model_dump_json())
-
-        pool.connect(msg.data.guest_id, ws)
-        pool.add_guest_to_waitlist(msg.data.guest_id)
+        pool.add_room_to_waitlist(room.id)
+        waiting_response = schemas.StaffNotAvailableEvent(type="StaffNotAvailable")
+        await ws.send_json(waiting_response.model_dump_json())
         return
 
+    await pool.assign_staff_to_room(room.id, staff_id, pool.get_staff_name(staff_id))
 
-    guest_id = msg.data.guest_id
-    room = ChatRoom(guest_id=guest_id, staff_id=staff_id)
-    db.add(room) # add to the session first
-    db.commit() # insert into db
-    db.refresh(room)
-    
-    # signal pool to add the staff to the room
-    pool.assign_staff_to_room(room.id, staff_id)
-
-    # add guest's ws connection to the connections set
-    pool.connect(guest_id, ws)
-    
-    # add guest's ws to the room
-    pool.join_room(room.id, ws)
-
-    # send RoomAssigned message to staff
-    room_assigned_msg = schemas.RoomAssignedEvent(type="RoomAssigned", data=schemas.RoomAssigned(room_id=room.id, guest_id=guest_id))
-    await pool.send_to_room(room.id, room_assigned_msg, ws)
-
-    response = schemas.RoomCreatedResponse(type="RoomCreated", data=schemas.RoomCreatedPayload(room_id=room.id))
-    await ws.send_json(response.model_dump_json())
 
 async def room_message_handler(ws: WebSocket, pool: Pool, msg: WsMessage):
     room_id = msg.data.room_id
     print(f"Message received for room with ID {room_id}: {type(room_id)}")
+    pool.store_room_message(room_id, msg)
     await pool.send_to_room(room_id, msg, ws)
+
 
 async def typing_toggle_handler(ws: WebSocket, pool: Pool, msg: WsMessage):
     room_id = msg.data.room_id
     await pool.send_to_room(room_id, msg, ws)
 
 
-# Entry point handler
 async def ws_handler(ws: WebSocket, pool: Pool, msg: WsMessage, db: Session):
     if msg.type == "RegisterStaff":
         await register_staff_handler(ws, pool, msg)
