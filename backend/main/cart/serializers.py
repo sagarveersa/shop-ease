@@ -4,6 +4,7 @@ from products.models import Product
 from products.serializers import ProductSerializer
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from inventory.services import get_available_stock
 
 User = get_user_model()
 
@@ -17,6 +18,23 @@ class CartSerializer(ModelSerializer):
     class Meta:
         model = Cart
         fields = '__all__'
+
+    def validate(self, attrs):
+        product = attrs.get("product")
+        quantity = attrs.get("quantity")
+
+        if product is None or quantity is None or quantity == 0:
+            return attrs
+
+        available_stock = get_available_stock(product)
+        if quantity > available_stock:
+            raise serializers.ValidationError(
+                {
+                    "quantity": f"Only {available_stock} item(s) available in stock."
+                }
+            )
+
+        return attrs
     
     def get_user(self, obj):
         print("Inside Serializer", obj)

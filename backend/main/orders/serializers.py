@@ -3,10 +3,18 @@ from .models import OrderItem, Order
 from django.db import transaction
 from products.models import Product
 from cart.models import Cart
+from inventory.services import InsufficientStockError, reserve_stock_for_items
 
 
 def create_order_with_items(*, user, shipping_address, items_data):
     with transaction.atomic():
+        try:
+            reserved_items = reserve_stock_for_items(items_data=items_data)
+        except InsufficientStockError as exc:
+            raise serializers.ValidationError(
+                {"detail": str(exc)}
+            ) from exc
+
         order = Order.objects.create(
             user=user,
             shipping_address=shipping_address,
@@ -15,11 +23,8 @@ def create_order_with_items(*, user, shipping_address, items_data):
 
         total = 0
 
-        for item in items_data:
-            product = Product.objects.select_for_update().get(
-                id=item['product_id']
-            )
-
+        for item in reserved_items:
+            product = item["product"]
             price = product.price
             quantity = item['quantity']
 

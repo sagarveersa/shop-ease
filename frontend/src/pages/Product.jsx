@@ -147,6 +147,9 @@ export default function Product() {
   const inCart = !!cartItem;
   const averageRating = product?.avgRating ?? 0;
   const totalRatings = product?.ratingCount ?? 0;
+  const availableStock = product?.stock ?? 0;
+  const isInStock = product?.isInStock ?? availableStock > 0;
+  const canIncreaseCartQuantity = !cartItem || cartItem.qty < availableStock;
 
   const loadProductDetails = async ({ showLoader = true, trackView = true } = {}) => {
     if (showLoader) {
@@ -347,7 +350,9 @@ export default function Product() {
                       {totalRatings} ratings
                     </span>
                     <span className="text-gray-500 light:text-slate-400">|</span>
-                    <span className="text-green-400">In Stock</span>
+                    <span className={isInStock ? "text-green-400" : "text-red-400"}>
+                      {isInStock ? "In Stock" : "Out of Stock"}
+                    </span>
                   </div>
 
                   <div className="mt-4 border-t border-white/10 light:border-slate-200 pt-4">
@@ -411,15 +416,22 @@ export default function Product() {
                     Order within 5 hrs 12 mins
                   </div>
 
-                  <div className="mt-4 text-sm text-green-400">In stock</div>
+                  <div
+                    className={`mt-4 text-sm font-medium ${
+                      isInStock ? "text-green-400" : "text-red-400"
+                    }`}
+                  >
+                    {isInStock ? "In stock" : "Out of stock"}
+                  </div>
 
                   <div className="mt-4 space-y-3">
                     {loggedIn && !inCart && (
                       <button
-                        className="w-full bg-blue-600 px-4 py-3 text-white rounded-lg font-semibold hover:bg-blue-700 transition shadow-lg"
+                        className="w-full bg-blue-600 px-4 py-3 text-white rounded-lg font-semibold hover:bg-blue-700 transition shadow-lg disabled:bg-gray-500 disabled:text-gray-300 light:disabled:bg-slate-300 light:disabled:text-slate-500 disabled:cursor-not-allowed disabled:hover:bg-gray-500 light:disabled:hover:bg-slate-300"
                         onClick={() => addToCart(product)}
+                        disabled={!isInStock}
                       >
-                        Add to Cart
+                        {isInStock ? "Add to Cart" : "Out of Stock"}
                       </button>
                     )}
                     {loggedIn && inCart && (
@@ -437,7 +449,8 @@ export default function Product() {
 
                         <button
                           onClick={() => addToCart(product)}
-                          className="bg-blue-600 w-9 h-9 flex items-center justify-center rounded-md text-white hover:bg-blue-700 transition"
+                          disabled={!canIncreaseCartQuantity}
+                          className="bg-blue-600 w-9 h-9 flex items-center justify-center rounded-md text-white hover:bg-blue-700 transition disabled:cursor-not-allowed disabled:bg-gray-500 disabled:text-gray-300 light:disabled:bg-slate-300 light:disabled:text-slate-500"
                         >
                           +
                         </button>
@@ -445,15 +458,20 @@ export default function Product() {
                     )}
                     {!loggedIn && (
                       <button
-                        className="w-full bg-blue-600 px-4 py-3 text-white rounded-lg font-semibold hover:bg-blue-700 transition shadow-lg disabled:bg-gray-500 disabled:text-gray-300 light:disabled:bg-slate-300 light:disabled:text-slate-500 disabled:cursor-not-allowed disabled:hover:bg-gray-500 light:disabled:hover:bg-slate-300"
+                        className={`w-full px-4 py-3 rounded-lg font-semibold transition shadow-lg disabled:cursor-not-allowed ${
+                          isInStock
+                            ? "bg-blue-600 text-white hover:bg-blue-700"
+                            : "bg-gray-500 text-gray-300 light:bg-slate-300 light:text-slate-500"
+                        }`}
                         disabled
                       >
-                        Add to Cart
+                        {isInStock ? "Add to Cart" : "Out of Stock"}
                       </button>
                     )}
                     <button
-                      className="w-full bg-green-600 px-4 py-3 text-white rounded-lg font-semibold hover:bg-green-700 transition shadow-lg"
+                      className="w-full bg-green-600 px-4 py-3 text-white rounded-lg font-semibold hover:bg-green-700 transition shadow-lg disabled:bg-gray-500 disabled:text-gray-300 light:disabled:bg-slate-300 light:disabled:text-slate-500 disabled:cursor-not-allowed disabled:hover:bg-gray-500 light:disabled:hover:bg-slate-300"
                       onClick={checkout}
+                      disabled={!isInStock}
                     >
                       Buy Now
                     </button>

@@ -10,6 +10,9 @@ export default function ProductCard({ product }) {
   const location = useLocation();
   const cartItem = loggedIn && cart && product ? cart[product.id] : null;
   const inCart = !!cartItem;
+  const availableStock = product?.stock ?? 0;
+  const isInStock = product?.isInStock ?? availableStock > 0;
+  const canIncreaseQuantity = !cartItem || cartItem.qty < availableStock;
   const categoryLabel = Array.isArray(product.categories)
     ? product.categories.join(", ")
     : product.category || "Uncategorized";
@@ -48,6 +51,18 @@ export default function ProductCard({ product }) {
           ${product.price.toFixed(2)}
         </p>
 
+        <div className="mt-2">
+          <span
+            className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+              isInStock
+                ? "bg-emerald-500/15 text-emerald-300 light:bg-emerald-50 light:text-emerald-700"
+                : "bg-red-500/15 text-red-300 light:bg-red-50 light:text-red-600"
+            }`}
+          >
+            {isInStock ? "In Stock" : "Out of Stock"}
+          </span>
+        </div>
+
         {/* Spacer */}
         <div className="flex-1" />
 
@@ -58,9 +73,10 @@ export default function ProductCard({ product }) {
               onClick={() => {
                 addToCart(product);
               }}
-              className="flex-1 text-xs py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition shadow-lg"
+              disabled={!isInStock}
+              className="flex-1 text-xs py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition shadow-lg disabled:cursor-not-allowed disabled:bg-gray-500 disabled:text-gray-300 light:disabled:bg-slate-300 light:disabled:text-slate-500"
             >
-              Add to Cart
+              {isInStock ? "Add to Cart" : "Out of Stock"}
             </button>
           )}
 
@@ -79,7 +95,8 @@ export default function ProductCard({ product }) {
 
               <button
                 onClick={() => addToCart(product)}
-                className="bg-blue-600 w-8 h-8 flex items-center justify-center rounded-md text-white hover:bg-blue-700 transition"
+                disabled={!canIncreaseQuantity}
+                className="bg-blue-600 w-8 h-8 flex items-center justify-center rounded-md text-white hover:bg-blue-700 transition disabled:cursor-not-allowed disabled:bg-gray-500 disabled:text-gray-300 light:disabled:bg-slate-300 light:disabled:text-slate-500"
               >
                 +
               </button>
@@ -89,9 +106,13 @@ export default function ProductCard({ product }) {
           {!loggedIn && (
             <button
               disabled
-              className="flex-1 text-xs py-2 bg-gray-300 light:bg-slate-200 text-gray-600 light:text-slate-500 rounded-md cursor-not-allowed"
+              className={`flex-1 text-xs py-2 rounded-md cursor-not-allowed ${
+                isInStock
+                  ? "bg-gray-300 light:bg-slate-200 text-gray-600 light:text-slate-500"
+                  : "bg-red-500/15 light:bg-red-50 text-red-300 light:text-red-600"
+              }`}
             >
-              Add to Cart
+              {isInStock ? "Add to Cart" : "Out of Stock"}
             </button>
           )}
         </div>

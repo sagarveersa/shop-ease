@@ -48,6 +48,10 @@ class CheckoutViewTests(APITestCase):
         self.assertEqual(response.data["status"], "pending")
         self.assertEqual(len(response.data["items"]), 2)
         self.assertEqual(Decimal(response.data["total_amount"]), Decimal("129.48"))
+        self.product.refresh_from_db()
+        self.second_product.refresh_from_db()
+        self.assertEqual(self.product.stock, 8)
+        self.assertEqual(self.second_product.stock, 7)
         self.assertFalse(Cart.objects.filter(user=self.user).exists())
 
     def test_buy_now_checkout_creates_single_item_order_without_clearing_cart(self):
@@ -68,6 +72,8 @@ class CheckoutViewTests(APITestCase):
         self.assertEqual(len(response.data["items"]), 1)
         self.assertEqual(response.data["items"][0]["quantity"], 2)
         self.assertEqual(Decimal(response.data["total_amount"]), Decimal("99.98"))
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.stock, 8)
         self.assertEqual(Cart.objects.filter(user=self.user).count(), 1)
 
     def test_cart_checkout_rejects_empty_cart(self):
@@ -91,6 +97,21 @@ class CheckoutViewTests(APITestCase):
         self.assertIn("product_id", response.data)
         self.assertIn("quantity", response.data)
 
+    def test_checkout_rejects_when_stock_is_insufficient(self):
+        response = self.client.post(
+            "/api/checkout/",
+            {
+                "source": "buy_now",
+                "product_id": str(self.product.id),
+                "quantity": 11,
+                "shipping_address": "221B Baker Street",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("detail", response.data)
+
     def test_order_creation_is_not_available_through_orders_viewset(self):
         response = self.client.post(
             "/api/orders/",
@@ -107,3 +128,29 @@ class CheckoutViewTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_cancel_order_releases_reserved_stock(self):
+        create_response = self.client.post(
+            "/api/checkout/",
+            {
+                "source": "buy_now",
+                "product_id": str(self.product.id),
+                "quantity": 2,
+                "shipping_address": "742 Evergreen Terrace",
+            },
+            format="json",
+        )
+
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.stock, 8)
+
+        cancel_response = self.client.post(
+            f"/api/orders/{create_response.data['id']}/cancel/",
+            format="json",
+        )
+
+        self.assertEqual(cancel_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(cancel_response.data["status"], "cancelled")
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.stock, 10)

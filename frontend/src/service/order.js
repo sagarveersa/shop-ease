@@ -3,6 +3,25 @@ import { api } from "./api";
 // TODO
 // change quantity to qty
 
+function extractErrorMessage(error, fallbackMessage) {
+  const data = error?.response?.data;
+  if (typeof data === "string" && data) {
+    return data;
+  }
+
+  if (data && typeof data === "object") {
+    const firstValue = Object.values(data)[0];
+    if (Array.isArray(firstValue) && firstValue.length > 0) {
+      return String(firstValue[0]);
+    }
+    if (typeof firstValue === "string") {
+      return firstValue;
+    }
+  }
+
+  return fallbackMessage;
+}
+
 export const OrderService = {
   getOrders: async ({ signal }) => {
     try {
@@ -78,7 +97,12 @@ export const OrderService = {
         return { status: "aborted", data: {} };
       }
 
-      return { status: "error", data: {} };
+      return {
+        status: "error",
+        data: {
+          error: extractErrorMessage(error, "Unable to complete checkout."),
+        },
+      };
     }
   },
 };

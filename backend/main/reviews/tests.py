@@ -8,6 +8,7 @@ from rest_framework.test import APITestCase
 from products.models import Product
 
 from .models import Review
+from .services import create_review, delete_review
 
 
 User = get_user_model()
@@ -50,14 +51,14 @@ class ReviewApiTests(APITestCase):
         self.assertEqual(self.product.avg_rating, 5)
 
     def test_review_list_can_be_filtered_by_product(self):
-        Review.objects.create(user=self.user, product=self.product, rating=4, comment="Solid")
+        create_review(user=self.user, product=self.product, rating=4, comment="Solid")
         other_product = Product.objects.create(
             name="Mouse Pad",
             price=Decimal("19.99"),
             description="Large desk mat",
             stock=20,
         )
-        Review.objects.create(
+        create_review(
             user=self.second_user,
             product=other_product,
             rating=3,
@@ -88,7 +89,7 @@ class ReviewApiTests(APITestCase):
         self.assertIn("product_id", response.data)
 
 
-class ReviewSignalTests(TestCase):
+class ReviewServiceTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
             email="signal@example.com",
@@ -106,13 +107,13 @@ class ReviewSignalTests(TestCase):
         )
 
     def test_delete_review_recalculates_product_metrics(self):
-        first_review = Review.objects.create(
+        first_review = create_review(
             user=self.user,
             product=self.product,
             rating=5,
             comment="Very comfortable",
         )
-        Review.objects.create(
+        create_review(
             user=self.second_user,
             product=self.product,
             rating=3,
@@ -123,7 +124,7 @@ class ReviewSignalTests(TestCase):
         self.assertEqual(self.product.rating_count, 2)
         self.assertEqual(self.product.avg_rating, 4)
 
-        first_review.delete()
+        delete_review(review=first_review)
         self.product.refresh_from_db()
 
         self.assertEqual(self.product.rating_count, 1)

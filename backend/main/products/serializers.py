@@ -7,6 +7,18 @@ class ProductSerializer(serializers.ModelSerializer):
         many=True,
         read_only=True,
     )
+    stock = serializers.SerializerMethodField()
+    is_in_stock = serializers.SerializerMethodField()
+
+    def get_stock(self, obj):
+        inventory_record = getattr(obj, "inventory", None)
+        if inventory_record is not None:
+            return inventory_record.quantity_available
+
+        return obj.stock
+
+    def get_is_in_stock(self, obj):
+        return self.get_stock(obj) > 0
 
     class Meta:
         model = Product
@@ -20,6 +32,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "avg_rating",
             "rating_count",
             "stock",
+            "is_in_stock",
         ]
 
 class CategorySerializer(serializers.ModelSerializer):

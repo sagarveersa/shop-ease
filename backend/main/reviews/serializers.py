@@ -3,6 +3,7 @@ from rest_framework import serializers
 from products.models import Product
 
 from .models import Review
+from .services import create_review
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -54,4 +55,4 @@ class ReviewSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        return Review.objects.create(user=self.context["request"].user, **validated_data)
+        return create_review(user=self.context["request"].user, **validated_data)

@@ -13,7 +13,7 @@ class ProductsListView(ListAPIView):
     ordering_fields = ["price"]
 
     def get_queryset(self):
-        return Product.objects.prefetch_related('categories').all()
+        return Product.objects.select_related("inventory").prefetch_related('categories').all()
 
 class ProductDetailView(RetrieveAPIView):
     queryset = Product.objects.all()
@@ -22,7 +22,7 @@ class ProductDetailView(RetrieveAPIView):
     lookup_url_kwarg='id'
 
     def get_queryset(self):
-        return Product.objects.prefetch_related('categories').all()
+        return Product.objects.select_related("inventory").prefetch_related('categories').all()
 
 class CategoryListView(ListAPIView):
     queryset = Category.objects.all()

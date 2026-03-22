@@ -105,6 +105,14 @@ export default function Orders() {
   }, [activeFilter, state.orders]);
 
   async function handleCancel(orderId) {
+    const confirmed = window.confirm(
+      "Are you sure you want to cancel this order?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
     setCancellingIds((prev) => new Set(prev).add(orderId));
 
     try {

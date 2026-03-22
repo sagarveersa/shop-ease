@@ -106,11 +106,17 @@ export default function OrderCard({ order, onCancel, isCancelling }) {
             onClick={() => onCancel?.(order.id)}
             disabled={isCancelling}
             className="
-              text-sm text-red-300
-              hover:text-red-200
-              light:text-red-600
-              light:hover:text-red-500
-              transition-colors
+              inline-flex items-center rounded-full
+              border border-red-500/40
+              bg-red-500/10
+              px-3 py-1.5
+              text-sm font-medium text-red-200
+              hover:bg-red-500/20
+              light:border-red-300
+              light:bg-red-50
+              light:text-red-700
+              light:hover:bg-red-100
+              transition
               disabled:opacity-60
               disabled:cursor-not-allowed
             "

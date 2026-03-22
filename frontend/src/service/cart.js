@@ -1,5 +1,25 @@
 import { api } from "./api";
 
+
+function extractErrorMessage(error, fallbackMessage) {
+  const data = error?.response?.data;
+  if (typeof data === "string" && data) {
+    return data;
+  }
+
+  if (data && typeof data === "object") {
+    const firstValue = Object.values(data)[0];
+    if (Array.isArray(firstValue) && firstValue.length > 0) {
+      return String(firstValue[0]);
+    }
+    if (typeof firstValue === "string") {
+      return firstValue;
+    }
+  }
+
+  return fallbackMessage;
+}
+
 export const CartService = {
   updateCart: async (productId, qty) => {
     try {
@@ -10,7 +30,12 @@ export const CartService = {
       return { success: true, data: { ...response.data } };
     } catch (error) {
       console.log(`[Service] ${error}`);
-      return { success: false, data: {} };
+      return {
+        success: false,
+        data: {
+          error: extractErrorMessage(error, "Unable to update cart."),
+        },
+      };
     }
   },
 

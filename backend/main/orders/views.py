@@ -11,9 +11,11 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
 from .models import Order
 from .tasks import send_order_confirmation_email
+from django.db import transaction
 from django.core.mail import send_mail
 from django.http import HttpResponse
 from analytics.mixpanel import track_event
+from inventory.services import release_stock_for_items
 
 
 def finalize_order_creation(*, order, user):
@@ -48,16 +50,28 @@ class OrderViewSet(ReadOnlyModelViewSet):
 
     @action(detail=True, methods=["post"])
     def cancel(self, request, pk=None):
-        order = self.get_object()
+        with transaction.atomic():
+            order = self.get_queryset().select_for_update().get(pk=pk)
 
-        if order.status in [Order.Status.CANCELLED, Order.Status.DELIVERED, Order.Status.SHIPPED]:
-            return Response(
-                {"detail": "Order cannot be cancelled at this stage."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            if order.status in [Order.Status.CANCELLED, Order.Status.DELIVERED, Order.Status.SHIPPED]:
+                return Response(
+                    {"detail": "Order cannot be cancelled at this stage."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
-        order.status = Order.Status.CANCELLED
-        order.save(update_fields=["status"])
+            releasable_items = [
+                {
+                    "product_id": str(item.product_id),
+                    "quantity": item.quantity,
+                }
+                for item in order.items.all()
+                if item.product_id is not None
+            ]
+            if releasable_items:
+                release_stock_for_items(items_data=releasable_items)
+
+            order.status = Order.Status.CANCELLED
+            order.save(update_fields=["status"])
 
         serializer = OrderDetailSerializer(order)
         return Response(serializer.data, status=status.HTTP_200_OK)

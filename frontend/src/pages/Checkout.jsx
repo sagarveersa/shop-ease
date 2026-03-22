@@ -341,7 +341,10 @@ export default function Checkout() {
           source,
           items_count: totalQuantity,
         });
-        dispatch({ type: "checkout/error", error: "Error placing order" });
+        dispatch({
+          type: "checkout/error",
+          error: response.data.error || "Error placing order",
+        });
         break;
       }
 
