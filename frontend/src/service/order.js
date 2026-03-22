@@ -48,23 +48,26 @@ export const OrderService = {
     }
   },
 
-  createOrder: async ({ signal, form, items }) => {
+  checkout: async ({ signal, form, source, productId, quantity }) => {
     try {
       let shippingAddress = "";
       for (const field in form) {
         shippingAddress += " " + form[field];
       }
-      console.log(items);
 
-      const mappedItems = [];
-      for (const item of items) {
-        mappedItems.push({ product_id: item.product.id, quantity: item.qty });
+      const payload = {
+        source,
+        shippingAddress: shippingAddress.trim(),
+      };
+
+      if (source === "buy_now") {
+        payload.productId = productId;
+        payload.quantity = quantity;
       }
 
-      const payload = { shippingAddress: shippingAddress, items: mappedItems };
       console.log("Payload", payload);
 
-      const response = await api.post("orders/", payload, {
+      const response = await api.post("checkout/", payload, {
         signal: signal,
       });
 

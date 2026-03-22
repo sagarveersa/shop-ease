@@ -140,7 +140,13 @@ export function Products() {
             </div>
 
             {loading && !productsError && (
-              <div className="relative sm:absolute sm:inset-0 min-h-[40vh] sm:min-h-0 flex justify-center items-center">
+              <div
+                className={`flex items-center justify-center ${
+                  products.length > 0
+                    ? "absolute inset-0 z-10 rounded-xl bg-[#0b172a]/45 light:bg-slate-50/70 backdrop-blur-[1px]"
+                    : "min-h-[40vh]"
+                }`}
+              >
                 <LoadingSpinner />
               </div>
             )}
@@ -151,7 +157,7 @@ export function Products() {
               </div>
             )}
 
-            {!loading && !productsError && (
+            {products.length > 0 && !productsError && (
               <div className="grid gap-5 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {products.map((product) => {
                   return <ProductCard key={product.id} product={product} />;

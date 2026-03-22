@@ -3,7 +3,6 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
-import { CheckoutProvider } from "./context/CheckoutContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import "./index.css";
 import { initAnalytics } from "./utils/analytics";
@@ -18,9 +17,7 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 
 const renderApp = (
   <CartProvider>
-    <CheckoutProvider>
-      <App />
-    </CheckoutProvider>
+    <App />
   </CartProvider>
 );
 

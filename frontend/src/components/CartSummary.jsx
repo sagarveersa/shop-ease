@@ -1,21 +1,20 @@
 import { useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { cartContext } from "../context/CartContext";
-import { checkoutContext } from "../context/CheckoutContext";
 import { trackEvent } from "../utils/analytics";
 
 export default function CartSummary() {
   const { cart, totalItems, totalPrice } = useContext(cartContext);
-  const { setCheckoutItems } = useContext(checkoutContext);
   const navigate = useNavigate();
 
   const checkout = () => {
-    // convert cart from an object with productId as keys to a list of products
-    const productsList = [];
-    for (const [productId, value] of Object.entries(cart)) {
-      productsList.push({ product: value.product, qty: value.qty });
-    }
+    const productsList = Object.values(cart).map((value) => ({
+      product: value.product,
+      qty: value.qty,
+    }));
+
     trackEvent("Begin Checkout", {
+      source: "cart",
       total_items: totalItems,
       total_price: totalPrice,
       items: productsList.map((item) => ({
@@ -25,8 +24,8 @@ export default function CartSummary() {
         quantity: item.qty,
       })),
     });
-    setCheckoutItems(productsList);
-    navigate("/checkout");
+
+    navigate("/checkout?source=cart");
   };
 
   return (
@@ -56,19 +55,17 @@ export default function CartSummary() {
         </div>
       </div>
 
-      <Link to="/checkout">
-        <button
-          className="
+      <button
+        className="
       mt-6 w-full py-3 rounded-xl
       bg-blue-600 text-white font-semibold
       hover:bg-blue-700 active:scale-[0.98]
       transition
     "
-          onClick={checkout}
-        >
-          Proceed to Checkout
-        </button>
-      </Link>
+        onClick={checkout}
+      >
+        Proceed to Checkout
+      </button>
     </div>
   );
 }

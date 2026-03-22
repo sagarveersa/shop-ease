@@ -1,13 +1,15 @@
 import { useContext } from "react";
+import { Trash } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { authContext } from "../context/AuthContext";
 import { cartContext } from "../context/CartContext";
 
 export default function ProductCard({ product }) {
   const { loggedIn } = useContext(authContext);
-  const { cart, addToCart } = useContext(cartContext);
+  const { cart, addToCart, removeFromCart } = useContext(cartContext);
   const location = useLocation();
-  const inCart = loggedIn && cart && product && cart[product.id];
+  const cartItem = loggedIn && cart && product ? cart[product.id] : null;
+  const inCart = !!cartItem;
   const categoryLabel = Array.isArray(product.categories)
     ? product.categories.join(", ")
     : product.category || "Uncategorized";
@@ -56,19 +58,32 @@ export default function ProductCard({ product }) {
               onClick={() => {
                 addToCart(product);
               }}
-              className="flex-1 text-xs py-2 bg-yellow-400 text-gray-900 rounded-md hover:bg-yellow-500 transition"
+              className="flex-1 text-xs py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition shadow-lg"
             >
               Add to Cart
             </button>
           )}
 
           {loggedIn && inCart && (
-            <button
-              disabled
-              className="flex-1 text-xs py-2 bg-gray-300 light:bg-slate-200 text-gray-600 light:text-slate-500 rounded-md cursor-not-allowed"
-            >
-              In Cart
-            </button>
+            <div className="flex flex-1 items-center justify-center gap-2">
+              <button
+                onClick={() => removeFromCart(product)}
+                className="bg-blue-600 w-8 h-8 flex items-center justify-center rounded-md text-white hover:bg-blue-700 transition"
+              >
+                {cartItem.qty > 1 ? "−" : <Trash size={16} />}
+              </button>
+
+              <span className="w-8 text-center font-semibold text-white light:text-slate-900 border border-blue-600 rounded-md py-1">
+                {cartItem.qty}
+              </span>
+
+              <button
+                onClick={() => addToCart(product)}
+                className="bg-blue-600 w-8 h-8 flex items-center justify-center rounded-md text-white hover:bg-blue-700 transition"
+              >
+                +
+              </button>
+            </div>
           )}
 
           {!loggedIn && (

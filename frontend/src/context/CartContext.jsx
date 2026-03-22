@@ -14,7 +14,7 @@ export function CartProvider({ children }) {
   const [syncedCart, setSyncedCart] = useState({});
   const [totalItems, setTotalItems] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -164,6 +164,13 @@ export function CartProvider({ children }) {
     asyncRemoveFromCart();
   };
 
+  const clearCart = () => {
+    setCart({});
+    setSyncedCart({});
+    setTotalItems(0);
+    setTotalPrice(0);
+  };
+
   if (!loggedIn) {
     return (
       <cartContext.Provider
@@ -176,6 +183,7 @@ export function CartProvider({ children }) {
           totalPrice: null,
           addToCart: null,
           removeFromCart: null,
+          clearCart: null,
         }}
       >
         {children}
@@ -194,6 +202,7 @@ export function CartProvider({ children }) {
         totalPrice: totalPrice,
         addToCart: addToCart,
         removeFromCart: removeFromCart,
+        clearCart: clearCart,
       }}
     >
       {children}
